@@ -3,6 +3,8 @@
 #include "RegisterFile.h"
 #include "Tools.h"
 
+//Eli Orians & Blake Lucas
+//
 //regInstance will be initialized to the single RegisterFile
 //object that is created
 RegisterFile * RegisterFile::regInstance = NULL;
