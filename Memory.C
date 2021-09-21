@@ -31,6 +31,7 @@ Memory * Memory::getInstance()
    if (memInstance == NULL)
    {
         memInstance = new Memory();
+        return memInstance;
    }
    else
    {
@@ -51,10 +52,17 @@ Memory * Memory::getInstance()
  */
 uint64_t Memory::getLong(int32_t address, bool & imem_error)
 {
-   if ((address % 8 == 0) && (address < 15))
+   if ((address % 8 == 0) && (address < MEMSIZE) && (address >= 0))
    {
         imem_error = false;
-        return mem[address];
+        uint8_t word[LONGSIZE];
+        
+        for (int i = 0; i < LONGSIZE; i++)
+        {
+            word[i] = mem[address + i];
+        }
+
+        return Tools::buildLong(word);
    }
    else
    {
@@ -75,10 +83,10 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
  */
 uint8_t Memory::getByte(int32_t address, bool & imem_error)
 {
-   if (address < 15)
+   if ((address < MEMSIZE) && (address >= 0))
    {
         imem_error = false;
-        return Tools::getByte(mem[address], address, address);
+        return mem[address];
    }
    else
    {
@@ -101,9 +109,13 @@ uint8_t Memory::getByte(int32_t address, bool & imem_error)
  */
 void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 {
-    if ((address % 8 == 0) && (address < 15))
-    {
-        mem[address] = value;
+    if ((address % 8 == 0) && (address < MEMSIZE) && (address >= 0))
+    { 
+        for (int i = 0; i < LONGSIZE; i++)
+        {
+            mem[address + i] = Tools::getByte(value, i);
+        }
+
         imem_error = false;
     }
     else
@@ -126,9 +138,9 @@ void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 
 void Memory::putByte(uint8_t value, int32_t address, bool & imem_error)
 {
-    if (address < 15)
+    if ((address < MEMSIZE) && (address >= 0))
     {
-        mem[address] = copyBits(value, mem[address], 0, 0, 64);
+        mem[address] = value;
         imem_error = false;
     }
     else
