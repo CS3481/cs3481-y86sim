@@ -3,6 +3,8 @@
 #include "Memory.h"
 #include "Tools.h"
 
+//Eli Orians & Blake Lucas
+//
 //memInstance will be initialized to the single instance
 //of the Memory class
 Memory * Memory::memInstance = NULL;
@@ -13,6 +15,10 @@ Memory * Memory::memInstance = NULL;
  */
 Memory::Memory()
 {
+    for (int i = 0; i < MEMSIZE; i++)
+    {
+        mem[i] = 0;   
+    }
 }
 
 /**
@@ -24,7 +30,15 @@ Memory::Memory()
  */
 Memory * Memory::getInstance()
 {
-   return NULL;
+   if (memInstance == NULL)
+   {
+        memInstance = new Memory();
+        return memInstance;
+   }
+   else
+   {
+        return memInstance;
+   }
 }
 
 /**
@@ -40,7 +54,23 @@ Memory * Memory::getInstance()
  */
 uint64_t Memory::getLong(int32_t address, bool & imem_error)
 {
-   return 0;
+   if ((address % 8 == 0) && (address < MEMSIZE) && (address >= 0))
+   {
+        imem_error = false;
+        uint8_t word[LONGSIZE];
+        
+        for (int i = 0; i < LONGSIZE; i++)
+        {
+            word[i] = mem[address + i];
+        }
+
+        return Tools::buildLong(word);
+   }
+   else
+   {
+        imem_error = true;
+        return 0;
+   }
 }
 
 /**
@@ -55,7 +85,16 @@ uint64_t Memory::getLong(int32_t address, bool & imem_error)
  */
 uint8_t Memory::getByte(int32_t address, bool & imem_error)
 {
-   return 0;
+   if ((address < MEMSIZE) && (address >= 0))
+   {
+        imem_error = false;
+        return mem[address];
+   }
+   else
+   {
+        imem_error = true;
+        return 0;
+   }
 }
 
 /**
@@ -66,12 +105,26 @@ uint8_t Memory::getByte(int32_t address, bool & imem_error)
  * imem_error to true
  *
  * @param 64-bit value to be stored in memory (mem array)
+ 
  * @param address of 64-bit word; access must be aligned (address % 8 == 0)
  * @return imem_error is set to true or false
  */
 void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 {
-   return;
+    if ((address % 8 == 0) && (address < MEMSIZE) && (address >= 0))
+    { 
+        for (int i = 0; i < LONGSIZE; i++)
+        {
+            mem[address + i] = Tools::getByte(value, i);
+        }
+
+        imem_error = false;
+    }
+    else
+    {
+        imem_error = true;
+    }
+    return;
 }
 
 /**
@@ -87,7 +140,14 @@ void Memory::putLong(uint64_t value, int32_t address, bool & imem_error)
 
 void Memory::putByte(uint8_t value, int32_t address, bool & imem_error)
 {
-   return;
+    if ((address < MEMSIZE) && (address >= 0))
+    {
+        mem[address] = value;
+        imem_error = false;
+    }
+    else
+        imem_error = true;
+    return;
 }
 
 /**

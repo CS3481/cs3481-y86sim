@@ -3,6 +3,8 @@
 #include "RegisterFile.h"
 #include "Tools.h"
 
+//Eli Orians & Blake Lucas
+//
 //regInstance will be initialized to the single RegisterFile
 //object that is created
 RegisterFile * RegisterFile::regInstance = NULL;
@@ -13,6 +15,10 @@ RegisterFile * RegisterFile::regInstance = NULL;
  */
 RegisterFile::RegisterFile()
 {
+    for (int i = 0; i < REGSIZE; i++)
+    {
+        reg[i] = 0;
+    }
 }
 
 /**
@@ -25,7 +31,11 @@ RegisterFile::RegisterFile()
  */
 RegisterFile * RegisterFile::getInstance()
 {
-   return NULL;
+    if (regInstance == NULL)
+    {
+        regInstance = new RegisterFile();
+    }
+    return regInstance;
 }
 
 /**
@@ -42,7 +52,16 @@ RegisterFile * RegisterFile::getInstance()
 */
 uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 {
-   return 0;
+    if (regNumber >= 0 && regNumber < REGSIZE)
+    {
+        error = false;
+        return reg[regNumber];
+    }
+    else
+    {
+        error = true;
+        return 0;
+    }
 }
 
 /**
@@ -57,7 +76,17 @@ uint64_t RegisterFile::readRegister(int32_t regNumber, bool & error)
 void RegisterFile::writeRegister(uint64_t value, int32_t regNumber, 
                                  bool & error)
 {
-   return;
+    
+    if (regNumber >= 0 && regNumber < REGSIZE)
+    {
+        reg[regNumber] = value;
+        error = false;
+    }
+    else
+    {
+        error = true;
+    }
+    return;
 }
 
 /**
