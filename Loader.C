@@ -32,22 +32,23 @@ Loader::Loader(int argc, char * argv[])
 {
    loaded = false;
 
-   for (int i = 0; i < argc; i++)
+   for (int i = 0; i < argc; i++)  //print contents of argv[]
    {
        printf("%s\n", argv[i]); 
    }
 
    inf.open("asumr.yo", std::ifstream::in);
-
-   if (inf.is_open())
+    
+   if (inf.is_open())   //print the asumer.yo file
    {
-        char c = inf.get();
+        char x[256];
 
         while (inf.good())
         {
-            std::cout << c;
-            c = inf.get();
+            inf.getline(x, 256, '\n');
+            printf("%s\n", x);
         }
+
         inf.close();
    }
    
