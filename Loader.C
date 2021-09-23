@@ -46,7 +46,8 @@ Loader::Loader(int argc, char * argv[])
         while (inf.good())
         {
             inf.getline(x, 256, '\n');
-            printf("%s\n", x);
+            //printf("%s\n", x);
+            loadline(x);
         }
 
         inf.close();
@@ -104,4 +105,40 @@ bool Loader::checkInputFile()
         return true;
     else
         return false;
+}
+
+//Add a method that will write the data in the line to memory 
+//(call that from within your loop)
+
+void Loader::loadline(char *x)
+{
+    inf.open("asumr.yo", std::ifstream::in);
+
+    Memory * mem = Memory::getInstance();
+
+    if (x[0] == '0' && x[DATABEGIN] != ' ')
+    {
+        uint8_t val;
+        int32_t addr;
+        bool err = false;
+
+//Helper method to convert char to int
+//Another method to turn array into 64bit val
+
+
+//!!!!! UPDATE LOADER FOR THIS METHOD
+        for (int i = 0; i < 5; i++)
+        {
+            //Bitshift?
+            //addr = x[i];
+        }
+
+        for (int i = 7; x[i] != ' '; i++)
+        {
+            //Bitshift?
+            //val = x[i];
+        }
+
+        mem.putByte(val, addr, err);
+    }
 }
