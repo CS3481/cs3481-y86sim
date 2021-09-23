@@ -37,6 +37,21 @@ Loader::Loader(int argc, char * argv[])
        printf("%s\n", argv[i]); 
    }
 
+   inf.open("asumr.yo", std::ifstream::in);
+
+   if (inf.is_open())
+   {
+        char c = inf.get();
+
+        while (inf.good())
+        {
+            std::cout << c;
+            c = inf.get();
+        }
+        inf.close();
+   }
+   
+
    //Start by writing a method that opens the file (checks whether it ends 
    //with a .yo and whether the file successfully opens; if not, return without 
    //loading)
