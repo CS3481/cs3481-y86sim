@@ -1,6 +1,6 @@
 /**
- * Names:
- * Team:
+ * Names: Eli O & Blake Lucas
+ * Team: Ricky Bobby & Cal Naughton Jr.
 */
 #include <iostream>
 #include <fstream>
@@ -31,6 +31,11 @@
 Loader::Loader(int argc, char * argv[])
 {
    loaded = false;
+
+   for (int i = 0; i < argc; i++)
+   {
+       printf("%s\n", argv[i]); 
+   }
 
    //Start by writing a method that opens the file (checks whether it ends 
    //with a .yo and whether the file successfully opens; if not, return without 
@@ -73,3 +78,14 @@ bool Loader::isLoaded()
 //You'll need to add more helper methods to this file.  Don't put all of your code in the
 //Loader constructor.  When you add a method here, add the prototype to Loader.h in the private
 //section.
+
+
+bool Loader::checkInputFile()
+{
+    inf.open("asumr.yo", std::ifstream::in);
+
+    if (inf.is_open())
+        return true;
+    else
+        return false;
+}
