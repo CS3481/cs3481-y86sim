@@ -47,7 +47,8 @@ Loader::Loader(int argc, char * argv[])
         {
             inf.getline(x, 256, '\n');
             //printf("%s\n", x);
-            loadline(x);
+            if (x[0] == '0' && x[DATABEGIN] != ' ')
+                loadline(x);
         }
 
         inf.close();
@@ -116,29 +117,42 @@ void Loader::loadline(char *x)
 
     Memory * mem = Memory::getInstance();
 
-    if (x[0] == '0' && x[DATABEGIN] != ' ')
+    uint8_t val;
+    int valArr[20];
+    int32_t addr;
+    int addrArr[5];
+    bool err = false;
+
+    
+    for (int i = 0; i < 5; i++) //address to int32_t
     {
-        uint8_t val;
-        int32_t addr;
-        bool err = false;
-
-//Helper method to convert char to int
-//Another method to turn array into 64bit val
-
-
-//!!!!! UPDATE LOADER FOR THIS METHOD
-        for (int i = 0; i < 5; i++)
-        {
-            //Bitshift?
-            //addr = x[i];
-        }
-
-        for (int i = 7; x[i] != ' '; i++)
-        {
-            //Bitshift?
-            //val = x[i];
-        }
-
-        mem.putByte(val, addr, err);
+        addrArr[i] = charToInt(x[i]);
     }
+    addr = arrayToVal(addrArr);
+
+    for (int i = 7; x[i] != ' '; i++) //val to int8_t
+    {
+        valArr[i] = charToInt(x[i]);
+    }
+    val = arrayToVal(valArr);
+      
+    mem -> putByte(val, addr, err);
 }
+
+int Loader::charToInt(char x)
+{
+    return x - '0';
+}
+
+int Loader::arrayToVal(int x[])
+{
+    std::stringstream ss;
+    int result;
+       
+    for (int i = 0; i < sizeof(x)/sizeof(x[0]); i++)
+        ss << x[i]
+
+    ss >> result;
+    return result;
+}
+
