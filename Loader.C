@@ -32,27 +32,30 @@ Loader::Loader(int argc, char * argv[])
 {
    loaded = false;
 
-   for (int i = 0; i < argc; i++)  //print contents of argv[]
-   {
-       printf("%s\n", argv[i]); 
-   }
-
-   inf.open("asumr.yo", std::ifstream::in);
+   inf.open(argv[1], std::ifstream::in);
     
    if (inf.is_open())   //print the asumer.yo file
    {
         char x[256];
+        int lineNumber = 0;
 
         while (inf.good())
         {
             inf.getline(x, 256, '\n');
-            //printf("%s\n", x);
             if (x[0] == '0' && x[DATABEGIN] != ' ')
                 loadline(x);
+            if (hasErrors(x))
+            {
+                std::cout << "Error on line " << std::dec << lineNumber
+                    << ": " << x << std::endl;
+                return;
+            }
+            lineNumber++;
         }
-
         inf.close();
    }
+   else
+        return;
    
 
    //Start by writing a method that opens the file (checks whether it ends 
@@ -74,11 +77,12 @@ Loader::Loader(int argc, char * argv[])
    //  std::cout << "Error on line " << std::dec << lineNumber
    //       << ": " << line << std::endl;
 
+}
 
-   //If control reaches here then no error was found and the program
-   //was loaded into memory.
-   loaded = true;  
-  
+bool Loader::hasErrors(char *x)
+{
+
+    return false;
 }
 
 /**
@@ -100,8 +104,6 @@ bool Loader::isLoaded()
 
 bool Loader::checkInputFile()
 {
-    inf.open("asumr.yo", std::ifstream::in);
-
     if (inf.is_open())
         return true;
     else
@@ -112,47 +114,26 @@ bool Loader::checkInputFile()
 //(call that from within your loop)
 
 void Loader::loadline(char *x)
-{
-    inf.open("asumr.yo", std::ifstream::in);
-
+{   
     Memory * mem = Memory::getInstance();
 
     uint8_t val;
-    int valArr[20];
     int32_t addr;
-    int addrArr[5];
     bool err = false;
+    std::string str = "";
 
-    
-    for (int i = 0; i < 5; i++) //address to int32_t
+    str += x[2];
+    str += x[3];
+    str += x[4];
+    addr = std::stoul(str, NULL, 16);
+
+    for (int i = 7; x[i] != ' '; i+=2) //val to int8_t
     {
-        addrArr[i] = charToInt(x[i]);
+        std::string str2 = "";
+        str2 = x[i];
+        str2 += x[i + 1];
+        val = std::stoul(str2, NULL, 16);
+        mem -> putByte(val, addr, err);
+        addr++;
     }
-    addr = arrayToVal(addrArr);
-
-    for (int i = 7; x[i] != ' '; i++) //val to int8_t
-    {
-        valArr[i] = charToInt(x[i]);
-    }
-    val = arrayToVal(valArr);
-      
-    mem -> putByte(val, addr, err);
 }
-
-int Loader::charToInt(char x)
-{
-    return x - '0';
-}
-
-int Loader::arrayToVal(int x[])
-{
-    std::stringstream ss;
-    int result;
-       
-    for (int i = 0; i < sizeof(x)/sizeof(x[0]); i++)
-        ss << x[i]
-
-    ss >> result;
-    return result;
-}
-

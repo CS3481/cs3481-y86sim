@@ -6,8 +6,7 @@ class Loader
       std::ifstream inf;  //input file handle
       bool checkInputFile();
       void loadline(char *x);
-      int charToInt(char x);
-      int arrayToVal(int x[]); 
+      bool hasErrors(char *x);
    public:
       Loader(int argc, char * argv[]);
       bool isLoaded();
