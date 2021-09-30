@@ -34,7 +34,7 @@ Loader::Loader(int argc, char * argv[])
 
    inf.open(argv[1], std::ifstream::in);
     
-   if (inf.is_open())   //print the asumer.yo file
+   if (inf.is_open())
    {
         char x[256];
         int lineNumber = 0;
@@ -43,12 +43,15 @@ Loader::Loader(int argc, char * argv[])
         {
             inf.getline(x, 256, '\n');
             if (x[0] == '0' && x[DATABEGIN] != ' ')
-                loadline(x);
-            if (hasErrors(x))
             {
-                std::cout << "Error on line " << std::dec << lineNumber
-                    << ": " << x << std::endl;
-                return;
+                loadline(x);
+                //MAY NEED TO MOVE IF STATEMENT BELOW BEFORE LOADING LINE, OR OUTSIDE ABOVE IF
+                if (hasErrors(x))
+                {
+                    std::cout << "Error on line " << std::dec << lineNumber
+                        << ": " << x << std::endl;
+                    return;
+                }
             }
             lineNumber++;
         }
@@ -76,14 +79,63 @@ Loader::Loader(int argc, char * argv[])
    //error message.  Change the variable names if you use different ones.
    //  std::cout << "Error on line " << std::dec << lineNumber
    //       << ": " << line << std::endl;
-
 }
 
 bool Loader::hasErrors(char *x)
 {
+    if (checkAddress(x))
+        return true;
+    else if (checkData(x))
+        return true;
+    else if (checkSpaces(x))
+        return true;
+    else if (checkColon(x))
+        return true;
+    else if (checkLine(x))
+        return true;
+    else
+        return false;
+}
 
+bool Loader::checkAddress(char *x)
+{
+    //Could be other things than numbers, check for unwanted chars
+    if ((x[0] == '0') && (x[1] == 'x') && (x[2] != ' ') && (x[3] != ' ') && (x[4] != ' '))
+        return false;
+    else
+        return true;
+}
+
+bool Loader::checkData(char *x)
+{
+    int counter = 0;
+    
+    for (int i = DATABEGIN; x[i] != ' '; i++)
+    {
+        if (!(x[i] >= 48 && x[i] <= 57) || !(x[i] >= 65 && x[i] <= 90)
+            || !(x[i] >= 97 && x[i] <= 122))
+            return true;
+        counter++;
+    }
+
+    if (counter % 2 != 0)
+        return true;
+    else
+        return false;
+}
+
+bool Loader::checkSpaces(char *x)
+{
     return false;
 }
+bool Loader::checkColon(char *x)
+{
+    return false;
+}
+bool Loader::checkLine(char *x)
+{
+    return false;
+}       
 
 /**
  * isLoaded
