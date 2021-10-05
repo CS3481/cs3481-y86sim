@@ -44,14 +44,14 @@ Loader::Loader(int argc, char * argv[])
             inf.getline(x, 256, '\n');
             if (x[0] == '0' && x[DATABEGIN] != ' ')
             {
-                loadline(x);
-                //MAY NEED TO MOVE IF STATEMENT BELOW BEFORE LOADING LINE, OR OUTSIDE ABOVE IF
                 if (hasErrors(x))
                 {
                     std::cout << "Error on line " << std::dec << lineNumber
                         << ": " << x << std::endl;
                     return;
                 }
+                else
+                    loadline(x);
             }
             lineNumber++;
         }
@@ -99,9 +99,19 @@ bool Loader::hasErrors(char *x)
 
 bool Loader::checkAddress(char *x)
 {
-    //Could be other things than numbers, check for unwanted chars
-    if ((x[0] == '0') && (x[1] == 'x') && (x[2] != ' ') && (x[3] != ' ') && (x[4] != ' '))
+    if (x[0] == '0' && x[1] == 'x')
+    {
+        for (int i = 2; i < 5; i++)
+        {
+            if ((x[i] >= 48 && x[i] <= 57) || (x[i] >= 65 && x[i] <= 90) || (x[i] >= 97 && x[i] <= 122))
+            {
+                return false;
+            }
+            else
+                return true;
+        }
         return false;
+    }
     else
         return true;
 }
@@ -126,15 +136,26 @@ bool Loader::checkData(char *x)
 
 bool Loader::checkSpaces(char *x)
 {
-    return false;
+    if (x[6] == ' ' && x[COMMENT - 1] == ' ')
+        return false;
+    else
+        return true;
 }
+
 bool Loader::checkColon(char *x)
 {
-    return false;
+    if (x[5] == ':')
+        return false;
+    else
+        return true;
 }
+
 bool Loader::checkLine(char *x)
 {
-    return false;
+    if (x[COMMENT] == '|')
+        return false;
+    else
+        return false;
 }       
 
 /**
