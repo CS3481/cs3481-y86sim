@@ -37,22 +37,22 @@ Loader::Loader(int argc, char * argv[])
    if (inf.is_open())
    {
         char x[256];
-        int lineNumber = 0;
+        int lineNumber = 1;
 
         while (inf.good())
         {
             inf.getline(x, 256, '\n');
-            if (x[0] == '0' && x[DATABEGIN] != ' ')
+            if (x[0] == 0)
+                break;
+
+            if (hasErrors(x))
             {
-                if (hasErrors(x))
-                {
-                    std::cout << "Error on line " << std::dec << lineNumber
-                        << ": " << x << std::endl;
-                    return;
-                }
-                else
-                    loadline(x);
+                std::cout << "Error on line " << std::dec << lineNumber
+                    << ": " << x << std::endl;
+                return;
             }
+            else if (x[DATABEGIN] != ' ')
+                loadline(x);
             lineNumber++;
         }
         inf.close();
@@ -79,38 +79,48 @@ Loader::Loader(int argc, char * argv[])
    //error message.  Change the variable names if you use different ones.
    //  std::cout << "Error on line " << std::dec << lineNumber
    //       << ": " << line << std::endl;
+
+   loaded = true;
 }
 
 bool Loader::hasErrors(char *x)
 {
-    if (checkAddress(x))
+     if (checkAddress(x))
         return true;
     else if (checkData(x))
         return true;
     else if (checkSpaces(x))
         return true;
-    else if (checkColon(x))
-        return true;
     else if (checkLine(x))
         return true;
     else
-        return false;
+       return false;
 }
 
 bool Loader::checkAddress(char *x)
 {
+    bool exists = false;
+    for (int i = 0; i < 6; i++)
+    {
+        if (x[i] != ' ')
+            exists = true;
+    }
+
+    if (exists == false)
+        return false; 
+
     if (x[0] == '0' && x[1] == 'x')
     {
         for (int i = 2; i < 5; i++)
         {
-            if ((x[i] >= 48 && x[i] <= 57) || (x[i] >= 65 && x[i] <= 90) || (x[i] >= 97 && x[i] <= 122))
+            if ((x[i] >= 48 && x[i] <= 57) || (x[i] >= 65 && x[i] <= 70) || (x[i] >= 97 && x[i] <= 102))
             {
-                return false;
+                return checkColon(x);
             }
             else
                 return true;
         }
-        return false;
+        return checkColon(x);
     }
     else
         return true;
@@ -118,15 +128,38 @@ bool Loader::checkAddress(char *x)
 
 bool Loader::checkData(char *x)
 {
-    int counter = 0;
+    bool dataExists = false;
+    for (int i = DATABEGIN; x[i] == '|'; i++)
+    {
+        if (x[i] != ' ')
+            dataExists = true;
+    }
+
+    bool addExists = false;
+    for (int i = 0; i < 6; i++)
+    {
+        if (x[i] != ' ')
+            addExists = true;
+    }
+
+    if (dataExists == true && addExists == false)
+        return true;
+    else if (dataExists == false && addExists == false)
+        return false;
     
+    //above checking if exists
+
+    int counter = 0;
+    bool dataBad = false;
     for (int i = DATABEGIN; x[i] != ' '; i++)
     {
-        if (!(x[i] >= 48 && x[i] <= 57) || !(x[i] >= 65 && x[i] <= 90)
-            || !(x[i] >= 97 && x[i] <= 122))
-            return true;
+        if (!((x[i] >= 48 && x[i] <= 57) || (x[i] >= 65 && x[i] <= 70) || (x[i] >= 97 && x[i] <= 102)))
+            dataBad = true;
         counter++;
     }
+    
+    if (dataBad == true)
+        return true;
 
     if (counter % 2 != 0)
         return true;
@@ -144,10 +177,10 @@ bool Loader::checkSpaces(char *x)
 
 bool Loader::checkColon(char *x)
 {
-    if (x[5] == ':')
-        return false;
-    else
+    if (x[5] != ':')
         return true;
+    else
+        return false;
 }
 
 bool Loader::checkLine(char *x)
@@ -155,8 +188,9 @@ bool Loader::checkLine(char *x)
     if (x[COMMENT] == '|')
         return false;
     else
-        return false;
+        return true;
 }       
+
 
 /**
  * isLoaded
