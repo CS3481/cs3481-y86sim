@@ -15,7 +15,8 @@
 #define ADDREND 4     //ending column of 3 digit hex address
 #define DATABEGIN 7   //starting column of data bytes
 #define COMMENT 28    //location of the '|' character 
-
+int32_t lastAddr = 0; //the last address
+int lastInstrucSize = 0;
 /**
  * Loader constructor
  * Opens the .yo file named in the command line arguments, reads the contents of the file
@@ -51,7 +52,8 @@ Loader::Loader(int argc, char * argv[])
                     << ": " << x << std::endl;
                 return;
             }
-            else if (x[DATABEGIN] != ' ')
+            lastInstrucSize = 0;
+            if (x[DATABEGIN] != ' ')
                 loadline(x);
             lineNumber++;
         }
@@ -99,6 +101,7 @@ bool Loader::hasErrors(char *x)
 
 bool Loader::checkAddress(char *x)
 {
+    //doees address exist?
     bool exists = false;
     for (int i = 0; i < 6; i++)
     {
@@ -108,6 +111,25 @@ bool Loader::checkAddress(char *x)
 
     if (exists == false)
         return false; 
+    
+     //is it larger than the last?  
+
+     bool lastAddrMore = false;
+     std::string str = "";
+     str += x[2];
+     str += x[3];
+     str += x[4];
+     int32_t curAddr = std::stoul(str, NULL, 16);
+      
+     if (curAddr < lastAddr + lastInstrucSize)
+         lastAddrMore = true;
+
+     lastAddr = curAddr;
+
+     if (lastAddrMore == true)
+         return true;
+
+    //formatted properly?
 
     if (x[0] == '0' && x[1] == 'x')
     {
@@ -128,12 +150,21 @@ bool Loader::checkAddress(char *x)
 
 bool Loader::checkData(char *x)
 {
+    //does it exist?
     bool dataExists = false;
-    for (int i = DATABEGIN; x[i] == '|'; i++)
+    int dataCounter = 0;
+    for (int i = DATABEGIN; x[i] != '|'; i++)
     {
         if (x[i] != ' ')
+        {
             dataExists = true;
+            dataCounter++;
+        }
     }
+    
+    //make sure it is even
+    if (dataCounter % 2 != 0)
+        return true;
 
     bool addExists = false;
     for (int i = 0; i < 6; i++)
@@ -142,29 +173,60 @@ bool Loader::checkData(char *x)
             addExists = true;
     }
 
-    if (dataExists == true && addExists == false)
-        return true;
-    else if (dataExists == false && addExists == false)
+    if (addExists == false && dataExists == false)
         return false;
-    
-    //above checking if exists
 
+    if (addExists == false && dataExists == true)
+        return true;
+ 
+
+    //formatted properly?
+    
     int counter = 0;
     bool dataBad = false;
-    for (int i = DATABEGIN; x[i] != ' '; i++)
+    for (int i = DATABEGIN; x[i] != ' ' && i < COMMENT; i++)
     {
+        //correct characters & in pairs
         if (!((x[i] >= 48 && x[i] <= 57) || (x[i] >= 65 && x[i] <= 70) || (x[i] >= 97 && x[i] <= 102)))
             dataBad = true;
         counter++;
+
+        //columns inline (continue going after space is seen to see if there is more chars)
+        if (x[i+1] == ' ')
+        {
+            i++;
+            while (x[i] != '|' && i < COMMENT)
+            {
+                if (x[i] != ' ')
+                    return true;
+                i++;
+            }
+
+            break;
+        }
     }
     
     if (dataBad == true)
         return true;
 
     if (counter % 2 != 0)
-        return true;
-    else
-        return false;
+        return true;    
+
+    //Memory size within range?
+    std::string str = "";
+    str += x[2];
+    str += x[3];
+    str += x[4];
+    int32_t addr = std::stoul(str, NULL, 16);
+
+    for (int i = 7; x[i] != ' '; i+=2)
+    {
+        addr++;
+        if (addr > MEMSIZE)
+            return true;
+    }
+    
+    return false;   
 }
 
 bool Loader::checkSpaces(char *x)
@@ -241,6 +303,7 @@ void Loader::loadline(char *x)
         str2 += x[i + 1];
         val = std::stoul(str2, NULL, 16);
         mem -> putByte(val, addr, err);
+        lastInstrucSize++;
         addr++;
     }
 }
