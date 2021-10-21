@@ -25,7 +25,11 @@ Loader.o: Loader.h Memory.h
 
 FetchStage.o: RegisterFile.h PipeRegField.h PipeReg.h F.h D.h M.h W.h Stage.h FetchStage.h Status.h Debug.h
 
+<<<<<<< HEAD
 DecodeStage.o: PipeRegField.h PipeReg.h D.h Stage.h DecodeStage.h Status.h Debug.h E.h
+=======
+DecodeStage.o: PipeRegField.h PipeReg.h D.h Stage.h DecodeStage.h Status.h Debug.h RegisterFile.h
+>>>>>>> 6e7a3dcd7d70b044d9c9f45891c2ed20b763a3b2
 
 ExecuteStage.o: PipeRegField.h PipeReg.h E.h Stage.h ExecuteStage.h Status.h Debug.h
 

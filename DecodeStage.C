@@ -1,5 +1,6 @@
 #include <string>
 #include <cstdint>
+#include "RegisterFile.h"
 #include "PipeRegField.h"
 #include "PipeReg.h"
 #include "D.h"
@@ -24,6 +25,18 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
 void DecodeStage::doClockHigh(PipeReg ** pregs)
 {
+     //D * dreg = (D *) pregs[FREG];
+     E * ereg = (E *) pregs[EREG];
+
+    ereg->getstat()->normal();
+    ereg->geticode()->normal();
+    ereg->getifun()->normal();
+    ereg->getdstE()->normal();
+    ereg->getdstM()->normal();
+    ereg->getvalC()->normal();
+    ereg->getvalA()->normal();
+    ereg->getsrcA()->normal();
+    ereg->getsrcB()->normal();
 
 }
 
