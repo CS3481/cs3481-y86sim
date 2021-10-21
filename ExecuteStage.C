@@ -2,8 +2,6 @@
 #include <cstdint>
 #include "PipeRegField.h"
 #include "PipeReg.h"
-#include "M.h"
-#include "W.h"
 #include "E.h"
 #include "Stage.h"
 #include "ExecuteStage.h"
