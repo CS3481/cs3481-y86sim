@@ -23,31 +23,31 @@ ConditionCodes.o: ConditionCodes.h Tools.h
 
 Loader.o: Loader.h Memory.h
 
-FetchStage.o:
+FetchStage.o: RegisterFile.h PipeRegField.h PipeReg.h F.h D.h M.h W.h Stage.h FetchStage.h Status.h Debug.h
 
-DecodeStage.o:
+DecodeStage.o: PipeRegField.h PipeReg.h D.h Stage.h DecodeStage.h Status.h Debug.h
 
-ExecuteStage.o:
+ExecuteStage.o: PipeRegField.h PipeReg.h E.h Stage.h ExecuteStage.h Status.h Debug.h
 
-MemoryStage.o:
+MemoryStage.o: PipeRegField.h PipeReg.h M.h Stage.h MemoryStage.h Status.h Debug.h
 
-WritebackStage.o:
+WritebackStage.o: PipeRegField.h PipeReg.h W.h Stage.h WritebackStage.h Status.h Debug.h
 
-Simulate.o:
+Simulate.o: PipeRegField.h PipeReg.h F.h D.h E.h M.h W.h Stage.h FetchStage.h DecodeStage.h ExecuteStage.h MemoryStage.h WritebackStage.h Simulate.h Memory.h RegisterFile.h ConditionCodes.h
 
-F.o:
+F.o: PipeRegField.h PipeReg.h F.h
 
-D.o:
+D.o: PipeRegField.h PipeReg.h D.h Instructions.h RegisterFile.h Status.h
 
-E.o:
+E.o: PipeRegField.h PipeReg.h E.h RegisterFile.h Instructions.h Status.h
 
-M.o:
+M.o: PipeRegField.h PipeReg.h M.h RegisterFile.h Instructions.h Status.h
 
-W.o:
+W.o: PipeRegField.h PipeReg.h W.h RegisterFile.h Instructions.h Status.h
 
-PipeReg.o:
+PipeReg.o: PipeReg.h 
 
-PipeRegField.o:
+PipeRegField.o: PipeRegField.h 
 
 
 
