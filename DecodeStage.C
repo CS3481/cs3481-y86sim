@@ -15,6 +15,8 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     E * ereg = (E *) pregs[EREG];
     uint64_t icode = 0, ifun = 0, valC = 0, valP = 0;
     uint64_t rA = RNONE, rB = RNONE, stat = SAOK;    
+    
+    //valC = ereg->get_t(
 
     setEInput(ereg, stat, icode, ifun, 0, 0, valC, valP, 0, 0);
     return false;
