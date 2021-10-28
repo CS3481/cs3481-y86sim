@@ -11,7 +11,7 @@
 #include "FetchStage.h"
 #include "Status.h"
 #include "Debug.h"
-
+#include "Instructions.h"
 
 /*
  * doClockLow:
@@ -26,6 +26,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
+   M * mreg = (M *) pregs[MREG];
+   W * wreg = (W *) pregs[WREG];
    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
@@ -35,13 +37,51 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //rA, rB, and valC to be set.
    //The lab assignment describes what methods need to be
    //written.
+   f_pc = selectPC(freg, mreg, wreg, f_pc);
+   //needRegIds(freg->geticode()->getOutput());
+   //needValC(freg->geticode()->getOutput());
+   //predictPC(freg);
 
    //The value passed to setInput below will need to be changed
-   freg->getpredPC()->setInput(f_pc + 1);
+   freg->getpredPC()->setInput(f_pc);
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
+}
+
+uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg, uint64_t f_pc)
+{
+    if (mreg->geticode()->getOutput() == IJXX)
+        f_pc = mreg->getvalA()->getOutput();
+    else if (wreg->geticode()->getOutput() == IRET)
+        f_pc = wreg->getvalM()->getOutput();
+    else
+        f_pc = freg->getpredPC()->getOutput();
+
+    return f_pc;
+}
+
+bool FetchStage::needRegIds(uint64_t f_icode)
+{
+    return (f_icode == IRRMOVQ || f_icode == IOPQ || f_icode == IPUSHQ || f_icode == IPOPQ
+            || f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ);
+}
+
+bool FetchStage::needValC(uint64_t f_icode)
+{
+    return (f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ || f_icode == IJXX
+            || f_icode == ICALL);
+}
+
+uint64_t FetchStage::predictPC(uint64_t f_predPC, uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
+{
+    if (f_icode == IJXX || f_icode == ICALL)
+        f_predPC = f_valC;
+    else
+        f_predPC = f_valP;
+
+    return f_predPC;
 }
 
 /* doClockHigh
