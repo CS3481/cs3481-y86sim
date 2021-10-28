@@ -13,10 +13,8 @@
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     E * ereg = (E *) pregs[EREG];
-    M * mreg = (M *) pregs[MREG];
-    
-    uint64_t icode = 0, ifun = 0, valE = 0, valA = 0, dstE = 0, dstM = 0, Cnd = 0;
-    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
+    M * mreg = (M *) pregs[MREG];    
+    uint64_t icode = 0, ifun = 0, valE = 0, valA = 0, dstE = 0, dstM = 0, Cnd = 0, stat = SAOK;
 
     setMInput(mreg, stat, icode, Cnd, valE, valA, dstE, dstM);
 
