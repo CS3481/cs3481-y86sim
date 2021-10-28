@@ -14,12 +14,10 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     D * dreg = (D *) pregs[FREG];
     E * ereg = (E *) pregs[EREG];
-    uint64_t icode = 0, ifun = 0, valC = 0, valP = 0;
-    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;    
-    
-    //valC = ereg->get_t(
+    uint64_t icode = 0, ifun = 0, valC = 0, valP = 0, dstE = RNONE,
+                    dstM = RNONE, srcA = RNONE, srcB = RNONE, stat = SAOK;  
 
-    setEInput(ereg, stat, icode, ifun, 0, 0, valC, valP, 0, 0);
+    setEInput(ereg, stat, icode, ifun, dstE, dstM, valC, valP, srcA, srcB);
     return false;
 }
 
