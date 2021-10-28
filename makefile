@@ -29,7 +29,7 @@ DecodeStage.o: PipeRegField.h PipeReg.h D.h E.h Stage.h DecodeStage.h Status.h D
 
 ExecuteStage.o: RegisterFile.h PipeRegField.h PipeReg.h E.h M.h Stage.h ExecuteStage.h Status.h Debug.h
 
-MemoryStage.o: PipeRegField.h PipeReg.h M.h Stage.h MemoryStage.h Status.h Debug.h
+MemoryStage.o: RegisterFile.h PipeRegField.h PipeReg.h M.h W.h Stage.h MemoryStage.h Status.h Debug.h
 
 WritebackStage.o: PipeRegField.h PipeReg.h W.h Stage.h WritebackStage.h Status.h Debug.h
 
