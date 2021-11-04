@@ -50,7 +50,23 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    bool checkNeedValC = needValC(icode);
    valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
    uint64_t prdct = predictPC(icode, valC, valP);
+    
+   //for getRegIds
+   byte = mem->getByte(f_pc + 1, error);
+   if (checkNeedIds)
+       getRegIds(rA, rB, byte);
 
+   //for buildValC
+   if (checkNeedValC)
+   {
+       for (int i = 2; i < 10; i++)
+       {
+           //IN PROGRESS
+           byte  = mem->getByte(f_pc + i, error);
+           buildValC(valC, byte);
+       }
+   }
+    
    //The value passed to setInput below will need to be changed
    freg->getpredPC()->setInput(prdct);
 
@@ -151,4 +167,17 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
    dreg->getvalC()->setInput(valC);
    dreg->getvalP()->setInput(valP);
 }
-     
+
+
+void FetchStage::getRegIds(uint64_t & rA, uint64_t & rB, uint8_t byte)
+{
+    rA = RNONE; //F
+    rB = Tools::getBits(byte, 0, 3);
+}
+
+
+void FetchStage::buildValC(uint64_t & valC, uint8_t byte)
+{
+    //how to add on each byte????
+    valC = Tools::getBits(byte, 0, 3);
+}
