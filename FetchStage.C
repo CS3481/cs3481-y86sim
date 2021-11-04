@@ -13,6 +13,7 @@
 #include "Debug.h"
 #include "Instructions.h"
 #include "Memory.h"
+#include "Tools.h"
 
 /*
  * doClockLow:
@@ -42,27 +43,33 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    
    Memory * mem = Memory::getInstance();
    bool error;
-   uint8_t byte = mem->getByte(f_pc, error);
-   //f_icode
-   //f_ifun
-   
+   uint8_t byte = mem->getByte(f_pc, error); //gets first byte
+   icode = Tools::getBits(byte, 0, 3);
+   ifun = Tools::getBits(byte, 4, 7);  
    bool checkNeedIds = needRegIds(icode);
    bool checkNeedValC = needValC(icode);
-   //PCincrement(f_pc, checkNeedIds, checkNeedValC);
-   //predictPC(valP, icode, valC, 0); NEED TO CHANGE THIS, CALL DOES NOT MATCH PARAMETERS
+   valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
+   uint64_t prdct = predictPC(icode, valC, valP);
 
-   //MAY NEED TO MOVE STATEMENT BELOW
    //The value passed to setInput below will need to be changed
-   freg->getpredPC()->setInput(f_pc);
+   freg->getpredPC()->setInput(prdct);
 
    //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
 }
 
-uint64_t PCincrement(uint64_t f_pc, bool checkNeedIds, bool checkNeedValC)
+uint64_t FetchStage::PCincrement(uint64_t f_pc, bool checkNeedIds, bool checkNeedValC)
 {
-   return 0; 
+    uint64_t size = f_pc;
+
+    if (checkNeedIds)
+        size += 1;
+
+    if (checkNeedValC)
+        size += 8;
+
+    return size; 
 }
 
 uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg, uint64_t f_pc)
@@ -89,14 +96,12 @@ bool FetchStage::needValC(uint64_t f_icode)
             || f_icode == ICALL);
 }
 
-uint64_t FetchStage::predictPC(uint64_t f_predPC, uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
+uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
 {
     if (f_icode == IJXX || f_icode == ICALL)
-        f_predPC = f_valC;
+        return f_valC;
     else
-        f_predPC = f_valP;
-
-    return f_predPC;
+        return f_valP;
 }
 
 /* doClockHigh

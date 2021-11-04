@@ -23,7 +23,7 @@ ConditionCodes.o: ConditionCodes.h Tools.h
 
 Loader.o: Loader.h Memory.h
 
-FetchStage.o: Memory.h Instructions.h RegisterFile.h PipeRegField.h PipeReg.h F.h D.h M.h W.h Stage.h FetchStage.h Status.h Debug.h
+FetchStage.o: Tools.h Memory.h Instructions.h RegisterFile.h PipeRegField.h PipeReg.h F.h D.h M.h W.h Stage.h FetchStage.h Status.h Debug.h
 
 DecodeStage.o: PipeRegField.h PipeReg.h D.h E.h Stage.h DecodeStage.h Status.h Debug.h RegisterFile.h
 
