@@ -44,8 +44,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    Memory * mem = Memory::getInstance();
    bool error;
    uint8_t byte = mem->getByte(f_pc, error); //gets first byte
-   icode = Tools::getBits(byte, 0, 3);
-   ifun = Tools::getBits(byte, 4, 7);  
+   ifun = Tools::getBits(byte, 0, 3);
+   icode = Tools::getBits(byte, 4, 7);  
    bool checkNeedIds = needRegIds(icode);
    bool checkNeedValC = needValC(icode);
    valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
@@ -62,6 +62,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 uint64_t FetchStage::PCincrement(uint64_t f_pc, bool checkNeedIds, bool checkNeedValC)
 {
     uint64_t size = f_pc;
+    size++;
 
     if (checkNeedIds)
         size += 1;
