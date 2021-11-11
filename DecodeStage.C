@@ -24,8 +24,10 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     setSrcB(dreg, srcB, icode); 
     setDstE(dreg, dstE, icode);
     setDstM(dreg, dstM, icode);
-    setValA(0, srcA);
-    setValB(0, srcB);
+    uint64_t tempValA = 0;
+    uint64_t tempValB = 0;
+    setValA(tempValA, srcA);
+    setValB(tempValB, srcB);
     return false;
 }
 
