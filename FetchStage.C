@@ -59,12 +59,12 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    //for buildValC
    if (checkNeedValC)
    {
+       uint8_t byteArray[8];
        for (int i = 2; i < 10; i++)
        {
-           //IN PROGRESS
-           byte  = mem->getByte(f_pc + i, error);
-           buildValC(valC, byte);
+           byteArray[i-2] = mem->getByte(f_pc + i, error);
        }
+       buildValC(valC, byteArray);
    }
     
    //The value passed to setInput below will need to be changed
@@ -176,8 +176,7 @@ void FetchStage::getRegIds(uint64_t & rA, uint64_t & rB, uint8_t byte)
 }
 
 
-void FetchStage::buildValC(uint64_t & valC, uint8_t byte)
+void FetchStage::buildValC(uint64_t & valC, uint8_t byte[])
 {
-    //how to add on each byte????
-    valC = Tools::getBits(byte, 0, 3);
+    valC += Tools::buildLong(byte);
 }
