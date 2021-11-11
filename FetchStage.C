@@ -168,15 +168,13 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
    dreg->getvalP()->setInput(valP);
 }
 
-
 void FetchStage::getRegIds(uint64_t & rA, uint64_t & rB, uint8_t byte)
 {
-    rA = RNONE; //F
+    rA = Tools::getBits(byte, 4, 7);
     rB = Tools::getBits(byte, 0, 3);
 }
 
-
 void FetchStage::buildValC(uint64_t & valC, uint8_t byte[])
 {
-    valC += Tools::buildLong(byte);
+    valC = Tools::buildLong(byte);
 }
