@@ -27,7 +27,7 @@ FetchStage.o: Tools.h Memory.h Instructions.h RegisterFile.h PipeRegField.h Pipe
 
 DecodeStage.o: Instructions.h PipeRegField.h PipeReg.h D.h E.h Stage.h DecodeStage.h Status.h Debug.h RegisterFile.h
 
-ExecuteStage.o: RegisterFile.h PipeRegField.h PipeReg.h E.h M.h Stage.h ExecuteStage.h Status.h Debug.h
+ExecuteStage.o: Instructions.h RegisterFile.h PipeRegField.h PipeReg.h E.h M.h Stage.h ExecuteStage.h Status.h Debug.h
 
 MemoryStage.o: RegisterFile.h PipeRegField.h PipeReg.h M.h W.h Stage.h MemoryStage.h Status.h Debug.h
 
