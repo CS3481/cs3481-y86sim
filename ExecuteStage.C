@@ -10,6 +10,8 @@
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
+#include "ConditionCodes.h"
+#include "Tools.h"
 
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
@@ -30,7 +32,14 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     setAluFun(alufun, icode, ifun);
     setCC(set_cc, icode);
     setDstE(ereg, dstE, icode, Cnd);
-    
+
+    valE = ALU(alufun, aluA, aluB);
+
+    if (set_cc)
+    {
+        setConditionCodes(valE, aluA, aluB);   
+    } 
+        
     setMInput(mreg, stat, icode, Cnd, valE, valA, dstE, dstM);
 
     return false;
@@ -103,8 +112,61 @@ void ExecuteStage::setCC(bool & set_cc, uint64_t e_icode)
 
 void ExecuteStage::setDstE(E * ereg, uint64_t & dstE, uint64_t e_icode, uint64_t e_Cnd)
 {
-    if (e_icode == IRRMOVQ && !e_Cnd) //change this
+    if (e_icode == IRRMOVQ && !e_Cnd)
         dstE = RNONE;
     else
-        dstE = ereg->getdstE()->getOutput(); //may be wrong dstE assigned
+        dstE = ereg->getdstE()->getOutput();
 }
+
+void ExecuteStage::setConditionCodes(uint64_t valE, uint64_t aluA, uint64_t aluB)
+{
+    ConditionCodes * cc = ConditionCodes::getInstance();
+    bool err = false;
+
+    //ZF (Zero flag)
+    if (valE == 0)
+        cc->setConditionCode(1, ZF, err);
+    else
+        cc->setConditionCode(0, ZF, err);
+    
+    //SF (Sign Flag)
+    if (valE < 0)
+        cc->setConditionCode(1, SF, err);
+    else
+        cc->setConditionCode(0, SF, err);
+    
+    //OF (Overflow flag)
+    if (Tools::addOverflow(aluB, aluA))
+        cc->setConditionCode(1, OF, err);
+    else
+        cc->setConditionCode(0, OF, err);
+}
+
+uint64_t ExecuteStage::ALU(uint64_t alufun, uint64_t A, uint64_t B)
+{
+    if (alufun == ADDQ)
+    {
+        return B + A;
+    }
+
+    if (alufun == SUBQ)
+    {
+        return B - A;
+    }
+
+    if (alufun == XORQ)
+    {
+        return B ^ A;
+    }
+
+    if (alufun == ANDQ)
+    {
+        return B & A;
+    }
+    else
+    {
+        return 0;
+    }
+    
+}
+
