@@ -37,7 +37,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     if (set_cc)
     {
-        setConditionCodes(valE, aluA, aluB);   
+        setConditionCodes(valE, aluA, aluB, alufun);   
     } 
         
     setMInput(mreg, stat, icode, Cnd, valE, valA, dstE, dstM);
@@ -118,7 +118,7 @@ void ExecuteStage::setDstE(E * ereg, uint64_t & dstE, uint64_t e_icode, uint64_t
         dstE = ereg->getdstE()->getOutput();
 }
 
-void ExecuteStage::setConditionCodes(uint64_t valE, uint64_t aluA, uint64_t aluB)
+void ExecuteStage::setConditionCodes(uint64_t valE, uint64_t aluA, uint64_t aluB, uint64_t alufun)
 {
     ConditionCodes * cc = ConditionCodes::getInstance();
     bool err = false;
@@ -130,38 +130,48 @@ void ExecuteStage::setConditionCodes(uint64_t valE, uint64_t aluA, uint64_t aluB
         cc->setConditionCode(0, ZF, err);
     
     //SF (Sign Flag)
-    if (valE < 0)
+    if (Tools::sign(valE))
         cc->setConditionCode(1, SF, err);
     else
         cc->setConditionCode(0, SF, err);
     
     //OF (Overflow flag)
-    if (Tools::addOverflow(aluB, aluA))
-        cc->setConditionCode(1, OF, err);
-    else
-        cc->setConditionCode(0, OF, err);
+    if (alufun == ADDQ)
+    {
+        if (Tools::addOverflow(aluB, aluA))
+            cc->setConditionCode(1, OF, err);
+        else
+            cc->setConditionCode(0, OF, err);
+    }
+    else if (alufun == SUBQ)
+    {
+         if (Tools::subOverflow(aluB, aluA))
+            cc->setConditionCode(1, OF, err);
+         else
+            cc->setConditionCode(0, OF, err);
+    }
 }
 
 uint64_t ExecuteStage::ALU(uint64_t alufun, uint64_t A, uint64_t B)
 {
     if (alufun == ADDQ)
     {
-        return B + A;
+        return (B + A);
     }
 
     if (alufun == SUBQ)
     {
-        return B - A;
+        return (B - A);
     }
 
     if (alufun == XORQ)
     {
-        return B ^ A;
+        return (B ^ A);
     }
 
     if (alufun == ANDQ)
     {
-        return B & A;
+        return (B & A);
     }
     else
     {
