@@ -15,6 +15,6 @@ class ExecuteStage : public Stage
     public:
         bool doClockLow(PipeReg ** pregs, Stage ** stages);
         void doClockHigh(PipeReg ** pregs);
-        static uint64_t getDstE();
-        static uint64_t getValE();
+        uint64_t getDstE();
+        uint64_t getValE();
 };
