@@ -5,8 +5,11 @@
 #include "PipeReg.h"
 #include "D.h"
 #include "E.h"
+#include "M.h"
+#include "W.h"
 #include "Stage.h"
 #include "DecodeStage.h"
+#include "ExecuteStage.h"
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
@@ -15,15 +18,19 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     D * dreg = (D *) pregs[DREG];
     E * ereg = (E *) pregs[EREG];
+    M * mreg = (M *) pregs[MREG];
+    W * wreg = (W *) pregs[WREG];
+
     uint64_t icode = dreg->geticode()->getOutput(), ifun = dreg->getifun()->getOutput(), 
                 valC = dreg->getvalC()->getOutput(), dstE = RNONE, dstM = RNONE, srcA = RNONE, 
                 srcB = RNONE, stat = SAOK;  
     uint64_t valA, valB;
+    
     setSrcA(dreg, srcA, icode);
     setSrcB(dreg, srcB, icode); 
     setDstE(dreg, dstE, icode);
     setDstM(dreg, dstM, icode);
-    setValA(valA, srcA);
+    setValA(valA, srcA, mreg, wreg);
     setValB(valB, srcB);
     setEInput(ereg, stat, icode, ifun, dstE, dstM, valC, valA, valB, srcA, srcB);
     return false;
@@ -111,11 +118,23 @@ void DecodeStage::setDstM(D * dreg, uint64_t & dstM, uint64_t d_icode)
         dstM = RNONE;
 }
 
-void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA)
+void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg)
 {
     RegisterFile * reg = RegisterFile::getInstance();
     bool err = false;
-    valA = reg->readRegister(d_srcA, err);
+    //valA = reg->readRegister(d_srcA, err);
+
+
+    //CREATE AN INSTANCE OF EXECUTESTAGE CLASS TO GET VALE AND DSTE    
+    if (d_srcA == ExecuteStage::getDstE())
+        valA = ExecuteStage::getValE();
+    else if (d_srcA == mreg->getdstE()->getOutput())
+        valA = mreg->getvalE()->getOutput();
+    else if (d_srcA == wreg->getdstE()->getOutput())
+        valA = wreg->getvalE()->getOutput();
+    else
+        valA = reg->readRegister(d_srcA, err);
+
 }
 
 void DecodeStage::setValB(uint64_t & valB, uint64_t d_srcB)
