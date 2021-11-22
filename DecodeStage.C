@@ -32,7 +32,7 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     setDstE(dreg, dstE, icode);
     setDstM(dreg, dstM, icode);
     setValA(valA, srcA, mreg, wreg, eObj);
-    setValB(valB, srcB);
+    setValB(valB, srcB, mreg, wreg, eObj);
     setEInput(ereg, stat, icode, ifun, dstE, dstM, valC, valA, valB, srcA, srcB);
     return false;
 }
@@ -123,10 +123,7 @@ void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg, 
 {
     RegisterFile * reg = RegisterFile::getInstance();
     bool err = false;
-    //valA = reg->readRegister(d_srcA, err);
-
-
-    //CREATE AN INSTANCE OF EXECUTESTAGE CLASS TO GET VALE AND DSTE    
+    
     if (d_srcA == eObj->getDstE())
         valA = eObj->getValE();
     else if (d_srcA == mreg->getdstE()->getOutput())
@@ -138,10 +135,20 @@ void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg, 
 
 }
 
-void DecodeStage::setValB(uint64_t & valB, uint64_t d_srcB)
+void DecodeStage::setValB(uint64_t & valB, uint64_t d_srcB, M * mreg, W * wreg, ExecuteStage * eObj)
 {
     RegisterFile * reg = RegisterFile::getInstance();
     bool err = false;
-    valB = reg->readRegister(d_srcB, err);
+    
+    if (d_srcB == eObj->getDstE())
+         valB = eObj->getValE();
+    else if (d_srcB == mreg->getdstE()->getOutput())
+        valB = mreg->getvalE()->getOutput();
+    else if (d_srcB == wreg->getdstE()->getOutput())
+        valB = wreg->getvalE()->getOutput();
+    else
+        valB = reg->readRegister(d_srcB, err);
+
+    
 }
 
