@@ -9,6 +9,15 @@
 #include "Debug.h"
 #include "RegisterFile.h"
 
+/*
+ * doClockLow
+ * low clock cycle of writeback stage
+ *
+ * @param pregs is something
+ * @param stages is something else
+ *
+ * @return false if no errors
+ */
 bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     W * wreg = (W *) pregs[WREG];
@@ -20,6 +29,12 @@ bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         return false;
 }
 
+/*
+ * doClockHigh
+ * high clock cycle for writeback stage
+ *
+ * @param pregs is something
+ */
 void WritebackStage::doClockHigh(PipeReg ** pregs)
 {
     RegisterFile * reg = RegisterFile::getInstance();

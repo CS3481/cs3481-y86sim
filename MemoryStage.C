@@ -10,6 +10,15 @@
 #include "Status.h"
 #include "Debug.h"
 
+/*
+ * doClockLow
+ * Low clock cycle in memory stage
+ *
+ * @param pregs is ptr to pipe reg
+ * @param stages is something
+ *
+ * @return bool true if errors
+ */
 bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     M * mreg = (M *) pregs[MREG];
@@ -23,6 +32,12 @@ bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     return false;
 }
 
+/*
+ * doClockHigh
+ * high clock cycle for mem stage
+ *
+ * @param pregs is something pointing at some stuff
+ */
 void MemoryStage::doClockHigh(PipeReg ** pregs)
 {
     W * wreg = (W *) pregs[WREG];
@@ -35,6 +50,18 @@ void MemoryStage::doClockHigh(PipeReg ** pregs)
     wreg->getdstM()->normal();
 }
 
+/*
+ * setWInput
+ * sets inputs for next stage
+ *
+ * @param wreg is ptr to writeback stage
+ * @param stat val for stat
+ * @param icode val for icode
+ * @param valE val for valE
+ * @param valM val for valM
+ * @param dstE val for dstE
+ * @param dstM val for dstM
+ */
 void MemoryStage::setWInput(W * wreg, uint64_t stat, uint64_t icode, uint64_t valE, uint64_t valM,
                                 uint64_t dstE, uint64_t dstM)
 {

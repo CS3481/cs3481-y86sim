@@ -13,6 +13,15 @@
 #include "ConditionCodes.h"
 #include "Tools.h"
 
+/*
+ * doClockLow
+ * Low clock cycle for execute stage
+ *
+ * @param pregs is ptr to pipe reg class
+ * @param stages is ptr to other stages
+ *
+ * @return boolean false if no errors
+ */
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     E * ereg = (E *) pregs[EREG];
@@ -48,6 +57,12 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
 }
 
+/*
+ * doClockHigh
+ * high clock cycle for execute stage
+ *
+ * @param pregs is ptr to pipe reg class
+ */
 void ExecuteStage::doClockHigh(PipeReg ** pregs)
 {
     M * mreg = (M *) pregs[MREG];
@@ -61,6 +76,19 @@ void ExecuteStage::doClockHigh(PipeReg ** pregs)
     mreg->getdstM()->normal();
 }
 
+/*
+ * setMInput
+ * sets input for next stage
+ *
+ * @param mreg is val of mreg
+ * @param stat is val of stat
+ * @param icode new val of icode
+ * @param cnd new val of cnd
+ * @param valE new val of valE
+ * @param valA new val of valA
+ * @param dstE new val of dstE
+ * @param dstM new val of dstM
+ */
 void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode, uint64_t Cnd, 
                                 uint64_t valE, uint64_t valA, uint64_t dstE, uint64_t dstM)
 {
@@ -73,6 +101,14 @@ void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode, uint64_t C
     mreg->getdstM()->setInput(dstM);
 }
 
+/*
+ * setAluA
+ * sets val of aluA
+ *
+ * @param ereg is ptr to E class
+ * @param aluA is reference to aluA
+ * @param e_icode is val of icode in execute stage
+ */
 void ExecuteStage::setAluA(E * ereg, uint64_t & aluA, uint64_t e_icode)
 {
     if (e_icode == IRRMOVQ || e_icode == IOPQ)
@@ -87,6 +123,15 @@ void ExecuteStage::setAluA(E * ereg, uint64_t & aluA, uint64_t e_icode)
         aluA = 0;
 }
 
+/*
+ * setAluB
+ * sets val of aluB
+ *
+ * @param ereg is ptr to E class
+ * @param aluB reference to aluB
+ * @param e_icode val of icode in execute stage
+ *
+ */
 void ExecuteStage::setAluB(E * ereg, uint64_t & aluB, uint64_t e_icode)
 {
     if (e_icode == IRMMOVQ || e_icode == IMRMOVQ || e_icode == IOPQ
@@ -99,6 +144,14 @@ void ExecuteStage::setAluB(E * ereg, uint64_t & aluB, uint64_t e_icode)
         aluB = 0;
 } 
 
+/*
+ * setAluFun
+ * sets val of alu function
+ *
+ * @param alufun is ref to alufun
+ * @param e_icode is icode val in exec stage
+ * @param ifun is val of ifun
+ */
 void ExecuteStage::setAluFun(uint64_t & alufun, uint64_t e_icode, uint64_t ifun)
 {
     if (e_icode == IOPQ)
@@ -107,11 +160,26 @@ void ExecuteStage::setAluFun(uint64_t & alufun, uint64_t e_icode, uint64_t ifun)
         alufun = ADDQ;
 }
 
+/*
+ * setCC
+ * set val of setcc
+ *
+ * @param set_cc is ref to set_cc
+ * @param e_icode is val of icode in execute stag
+ */
 void ExecuteStage::setCC(bool & set_cc, uint64_t e_icode)
 {
     set_cc = (e_icode == IOPQ);
 }
 
+/*
+ * setDstE
+ * sets val of dstE
+ *
+ * @param dstE is ref to dstE
+ * @param e_icode is val of icode in execute stage
+ * @param e_cnd is val of cnd in execute stage
+ */
 void ExecuteStage::setDstE(E * ereg, uint64_t & dstE, uint64_t e_icode, uint64_t e_Cnd)
 {
     if (e_icode == IRRMOVQ && !e_Cnd)
@@ -120,6 +188,15 @@ void ExecuteStage::setDstE(E * ereg, uint64_t & dstE, uint64_t e_icode, uint64_t
         dstE = ereg->getdstE()->getOutput();
 }
 
+/*
+ * setConditionCodes
+ * sets conidtion code flags
+ *
+ * @param valE is valE
+ * @param aluA is aluA
+ * @param aluB is val of aluB
+ * @param alufun is val of alu function
+ */
 void ExecuteStage::setConditionCodes(uint64_t valE, uint64_t aluA, uint64_t aluB, uint64_t alufun)
 {
     ConditionCodes * cc = ConditionCodes::getInstance();
@@ -154,6 +231,16 @@ void ExecuteStage::setConditionCodes(uint64_t valE, uint64_t aluA, uint64_t aluB
     }
 }
 
+/*
+ * ALU
+ * box for ALU in y86
+ *
+ * @param alufun is function for alu
+ * @param A is val of A
+ * @param B is val of B
+ *
+ * @return result of ALU box
+ */
 uint64_t ExecuteStage::ALU(uint64_t alufun, uint64_t A, uint64_t B)
 {
     if (alufun == ADDQ)
@@ -182,11 +269,23 @@ uint64_t ExecuteStage::ALU(uint64_t alufun, uint64_t A, uint64_t B)
     
 }
 
+/*
+ * getDstE
+ * returns dstE
+ *
+ * @return dstE
+ */
 uint64_t ExecuteStage::getDstE()
 {
     return dstE;
 }
 
+/*
+ * getValE
+ * returns valE
+ * 
+ * @return valE
+ */
 uint64_t ExecuteStage::getValE()
 {
     return valE;

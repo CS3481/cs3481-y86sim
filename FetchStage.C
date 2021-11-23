@@ -33,21 +33,18 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
-   //code missing here to select the value of the PC
-   //and fetch the instruction from memory
-   //Fetching the instruction will allow the icode, ifun,
-   //rA, rB, and valC to be set.
-   //The lab assignment describes what methods need to be
-   //written.
    f_pc = selectPC(freg, mreg, wreg, f_pc);
    
    Memory * mem = Memory::getInstance();
    bool error;
    uint8_t byte = mem->getByte(f_pc, error); //gets first byte
+   
    ifun = Tools::getBits(byte, 0, 3);
    icode = Tools::getBits(byte, 4, 7);  
+   
    bool checkNeedIds = needRegIds(icode);
    bool checkNeedValC = needValC(icode);
+   
    valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
    uint64_t prdct = predictPC(icode, valC, valP);
     
@@ -67,14 +64,22 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        buildValC(valC, byteArray);
    }
     
-   //The value passed to setInput below will need to be changed
    freg->getpredPC()->setInput(prdct);
 
-   //provide the input values for the D register
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
 }
 
+/*
+ * PCincrement
+ * increments the PC
+ *
+ * @param f_pc is something
+ * @param checkNeedIds is bool for that method
+ * @param chckNeedValC is bool for that method
+ *
+ * @return new PC
+ */
 uint64_t FetchStage::PCincrement(uint64_t f_pc, bool checkNeedIds, bool checkNeedValC)
 {
     uint64_t size = f_pc;
@@ -89,6 +94,17 @@ uint64_t FetchStage::PCincrement(uint64_t f_pc, bool checkNeedIds, bool checkNee
     return size; 
 }
 
+/*
+ * selectPC
+ * gets PC
+ *
+ * @param freg is ptr to F class
+ * @param mreg is ptr to M class
+ * @param wreg is ptr to W class
+ * @param f_pc is that
+ *
+ * @return the f_pc
+ */
 uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg, uint64_t f_pc)
 {
     if (mreg->geticode()->getOutput() == IJXX)
@@ -101,18 +117,44 @@ uint64_t FetchStage::selectPC(F * freg, M * mreg, W * wreg, uint64_t f_pc)
     return f_pc;
 }
 
+/*
+ * needRegIds
+ * checks if need regIds
+ *
+ * @param f_icode is val of icode in fetch stage
+ *
+ * @return boolean if regids are needed
+ */
 bool FetchStage::needRegIds(uint64_t f_icode)
 {
     return (f_icode == IRRMOVQ || f_icode == IOPQ || f_icode == IPUSHQ || f_icode == IPOPQ
             || f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ);
 }
 
+/*
+ * needValC
+ * checks if valC is needed
+ *
+ * @param f_icode is val of f_icode
+ *
+ * @return bool if needValC
+ */
 bool FetchStage::needValC(uint64_t f_icode)
 {
     return (f_icode == IIRMOVQ || f_icode == IRMMOVQ || f_icode == IMRMOVQ || f_icode == IJXX
             || f_icode == ICALL);
 }
 
+/*
+ * predictPC
+ * predicts the pc
+ *
+ * @param f_icode is val of icode
+ * @param f_valC is val of valC
+ * @param f_valP is val of valP
+ *
+ * @return the predicted pc
+ */
 uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_valP)
 {
     if (f_icode == IJXX || f_icode == ICALL)
@@ -168,12 +210,27 @@ void FetchStage::setDInput(D * dreg, uint64_t stat, uint64_t icode,
    dreg->getvalP()->setInput(valP);
 }
 
+/*
+ * getRegIds
+ * gets vals of rA and rB
+ *
+ * @param rA ref to rA
+ * @param rB ref to rB
+ * @param byte the byte for rA and rB
+ */
 void FetchStage::getRegIds(uint64_t & rA, uint64_t & rB, uint8_t byte)
 {
     rA = Tools::getBits(byte, 4, 7);
     rB = Tools::getBits(byte, 0, 3);
 }
 
+/*
+ * buildValC
+ * builds val C
+ *
+ * @param valC is ref to valC
+ * @param byte[] is array of bits to become valC
+ */
 void FetchStage::buildValC(uint64_t & valC, uint8_t byte[])
 {
     valC = Tools::buildLong(byte);

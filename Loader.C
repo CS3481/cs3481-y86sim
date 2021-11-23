@@ -6,7 +6,6 @@
 #include <fstream>
 #include <string.h>
 #include <ctype.h>
-
 #include "Loader.h"
 #include "Memory.h"
 
@@ -17,6 +16,7 @@
 #define COMMENT 28    //location of the '|' character 
 int32_t lastAddr = 0; //the last address
 int lastInstrucSize = 0;
+
 /**
  * Loader constructor
  * Opens the .yo file named in the command line arguments, reads the contents of the file
@@ -85,6 +85,14 @@ Loader::Loader(int argc, char * argv[])
    loaded = true;
 }
 
+/*
+ * hasErrors
+ * checks for errors
+ *
+ * @param x is ptr to line of code
+ * 
+ * @return bool true if errors
+ */
 bool Loader::hasErrors(char *x)
 {
      if (checkAddress(x))
@@ -99,6 +107,14 @@ bool Loader::hasErrors(char *x)
        return false;
 }
 
+/*
+ * checkAddress
+ * checks the address
+ *
+ * @param x is ptr to line of file
+ *
+ * @return true if errors
+ */
 bool Loader::checkAddress(char *x)
 {
     //doees address exist?
@@ -148,6 +164,14 @@ bool Loader::checkAddress(char *x)
         return true;
 }
 
+/*
+ * checkData
+ * checks if data is good
+ * 
+ * @param x is ptr to current line
+ *
+ * @return true if errors
+ */
 bool Loader::checkData(char *x)
 {
     //does it exist?
@@ -229,6 +253,14 @@ bool Loader::checkData(char *x)
     return false;   
 }
 
+/*
+ * checkSpaces
+ * checks spaces in file
+ *
+ * @param x is ptr to curr line in file
+ *
+ * @return true if errors
+ */
 bool Loader::checkSpaces(char *x)
 {
     if (x[6] == ' ' && x[COMMENT - 1] == ' ')
@@ -237,6 +269,14 @@ bool Loader::checkSpaces(char *x)
         return true;
 }
 
+/*
+ * checkColon
+ * checks colons in file
+ *
+ * @param x is ptr to curr line in file
+ *
+ * @return true if errors
+ */
 bool Loader::checkColon(char *x)
 {
     if (x[5] != ':')
@@ -245,6 +285,14 @@ bool Loader::checkColon(char *x)
         return false;
 }
 
+/*
+ * checkLine
+ * checks lines for comments in file
+ *
+ * @param x is ptr to curr line in file
+ *
+ * @return true if errors
+ */
 bool Loader::checkLine(char *x)
 {
     if (x[COMMENT] == '|')
@@ -265,12 +313,12 @@ bool Loader::isLoaded()
    return loaded;
 }
 
-
-//You'll need to add more helper methods to this file.  Don't put all of your code in the
-//Loader constructor.  When you add a method here, add the prototype to Loader.h in the private
-//section.
-
-
+/*
+ * checkInputFile
+ * checks if file is open
+ *
+ * @return true if is open
+ */
 bool Loader::checkInputFile()
 {
     if (inf.is_open())
@@ -279,9 +327,12 @@ bool Loader::checkInputFile()
         return false;
 }
 
-//Add a method that will write the data in the line to memory 
-//(call that from within your loop)
-
+/*
+ * loadline
+ * loads the line from the file
+ *
+ * @param x is curr line from file
+ */
 void Loader::loadline(char *x)
 {   
     Memory * mem = Memory::getInstance();

@@ -14,6 +14,15 @@
 #include "Debug.h"
 #include "Instructions.h"
 
+/*
+ * doClockLow
+ * Low clock cycle for the decode stage
+ *
+ * @param pregs is pointer to Pipe Register class
+ * @param stages is pointer to all stages
+ *
+ * @return boolean false if no errors
+ */
 bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     D * dreg = (D *) pregs[DREG];
@@ -37,6 +46,12 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     return false;
 }
 
+/*
+ * doClockHigh
+ * High clock cycle for decode stage
+ *
+ * @param pregs is ptr to pipe reg class
+ */
 void DecodeStage::doClockHigh(PipeReg ** pregs)
 {
      //D * dreg = (D *) pregs[FREG];
@@ -55,6 +70,22 @@ void DecodeStage::doClockHigh(PipeReg ** pregs)
 
 }
 
+/*
+ * setEInput
+ * Sets the inputs for the next stage, Execute Stage
+ *
+ * @param ereg is pointer to Execute stage values
+ * @param stat value for stat
+ * @param icode value for icode
+ * @param ifun value for ifun
+ * @param dstE value for dstE
+ * @param dstM value for dstM
+ * @param valC value for valC
+ * @param valA value for valA
+ * @param valB value for valB
+ * @param srcA value for srcA
+ * @param srcB value for srcB
+ */
 void DecodeStage::setEInput(E * ereg, uint64_t stat, uint64_t icode,
                         uint64_t ifun, uint64_t dstE, uint64_t dstM,
                         uint64_t valC, uint64_t valA, uint64_t valB,
@@ -72,6 +103,14 @@ void DecodeStage::setEInput(E * ereg, uint64_t stat, uint64_t icode,
     ereg->getsrcB()->setInput(srcB);
 }
 
+/*
+ * setSrcA
+ * sets srcA for execute stage
+ *
+ * @param dreg is ptr to decode stage values
+ * @param srcA is reference to srcA
+ * @param d_icode is value of decode stages' icode
+ */
 void DecodeStage::setSrcA(D * dreg, uint64_t & srcA, uint64_t d_icode)
 {
     if (d_icode == IRRMOVQ || d_icode == IRMMOVQ || d_icode == IOPQ
@@ -85,6 +124,14 @@ void DecodeStage::setSrcA(D * dreg, uint64_t & srcA, uint64_t d_icode)
         srcA = RNONE;
 }
 
+/*
+ * setSrcB
+ * sets srcB for next stage
+ *
+ * @param dreg is ptr to decode stage
+ * @param srcB is reference to srcB
+ * @param d_icode is value of icode in decode stage
+ */
 void DecodeStage::setSrcB(D * dreg, uint64_t & srcB, uint64_t d_icode) 
 {
     if (d_icode == IOPQ || d_icode == IRMMOVQ || d_icode == IMRMOVQ)
@@ -98,6 +145,14 @@ void DecodeStage::setSrcB(D * dreg, uint64_t & srcB, uint64_t d_icode)
         srcB = RNONE;
 }
 
+/*
+ * setDstE
+ * sets dstE for next stage
+ *
+ * @param dreg is ptr to decode stage
+ * @param dstE is reference to dstE
+ * @param d_icode is val of ifun in decode
+ */
 void DecodeStage::setDstE(D * dreg, uint64_t & dstE, uint64_t d_icode)
 {
     if (d_icode == IRRMOVQ || d_icode == IIRMOVQ || d_icode == IOPQ)
@@ -111,6 +166,14 @@ void DecodeStage::setDstE(D * dreg, uint64_t & dstE, uint64_t d_icode)
         dstE = RNONE;
 }
 
+/*
+ * setDstM
+ * sets dstM for next stage
+ *
+ * @param dreg is ptr to decode stage
+ * @param dstM is ref to dstM
+ * @param d_icode is value of icode in decode stage
+ */
 void DecodeStage::setDstM(D * dreg, uint64_t & dstM, uint64_t d_icode)
 {
     if (d_icode == IMRMOVQ || d_icode == IPOPQ)
@@ -119,6 +182,16 @@ void DecodeStage::setDstM(D * dreg, uint64_t & dstM, uint64_t d_icode)
         dstM = RNONE;
 }
 
+/*
+ * setValA
+ * sets valA for next stage
+ *
+ * @param valA is ref to valA
+ * @param d_srcA is val of srcA in decode
+ * @param mreg is ptr to memory stage
+ * @param wreg is ptr to writeback stage
+ * @param eObj is ptr to Execute stage
+ */
 void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg, ExecuteStage * eObj)
 {
     RegisterFile * reg = RegisterFile::getInstance();
@@ -134,7 +207,16 @@ void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg, 
         valA = reg->readRegister(d_srcA, err);
 
 }
-
+/*
+ * setValB
+ * sets valB for next stage
+ *
+ * @param valB is ref to valB
+ * @param d_srcB is srcB in decode stage
+ * @param mreg is ptr to mem stage
+ * @param wreg is ptr to writeback stage
+ * @param eObj is ptr to execute stage
+ */
 void DecodeStage::setValB(uint64_t & valB, uint64_t d_srcB, M * mreg, W * wreg, ExecuteStage * eObj)
 {
     RegisterFile * reg = RegisterFile::getInstance();
