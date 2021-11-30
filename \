@@ -7,10 +7,8 @@
 #include "W.h"
 #include "Stage.h"
 #include "MemoryStage.h"
-#include "Instructions.h"
 #include "Status.h"
 #include "Debug.h"
-#include "Memory.h"
 
 /*
  * doClockLow
@@ -30,16 +28,8 @@ bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
              valM = 0, dstE = mreg->getdstE()->getOutput(), dstM = mreg->getdstM()->getOutput();
 
     setWInput(wreg, stat, icode, valE, valM, dstE, dstM);
-    uint32_t address = addr(icode, valE, mreg->getvalA()->getOutput());
-    bool err = false;
-        
-    Memory * mem = Memory::getInstance();    
+    uint64_t address = addr(icode, valE, mreg->getvalA()->getOutput());
     
-    if (memRead(icode))
-        mem->getLong(address, err);
-
-    if (memWrite(icode))
-        mem->putLong(valM, address, err);
     
     return false;
 }
@@ -85,7 +75,7 @@ void MemoryStage::setWInput(W * wreg, uint64_t stat, uint64_t icode, uint64_t va
     wreg->getdstM()->setInput(dstM);      
 }
 
-uint32_t MemoryStage::addr(uint64_t icode, uint64_t valE, uint64_t valA)
+void MemoryStage::addr(uint64_t icode, uint64_t valE, uint64_t valA)
 {
     if (icode == IRMMOVQ || icode == IPUSHQ || icode == ICALL || icode == IMRMOVQ)
          return valE;
@@ -93,14 +83,4 @@ uint32_t MemoryStage::addr(uint64_t icode, uint64_t valE, uint64_t valA)
         return valA;
     else
         return 0;
-}
-
-bool MemoryStage::memRead(uint64_t icode)
-{
-    return (icode == IMRMOVQ || icode == IPOPQ || icode == IRET);
-}
-
-bool MemoryStage::memWrite(uint64_t icode)
-{
-    return (icode == IRMMOVQ || icode == IPUSHQ || icode == ICALL);
 }
