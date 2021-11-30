@@ -43,6 +43,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     setAluFun(alufun, icode, ifun);
     setCC(set_cc, icode);
     setDstE(ereg, dstE, icode, Cnd);
+    Cnd = cond(icode, ifun);
 
     valE = ALU(alufun, aluA, aluB);
 
@@ -110,7 +111,7 @@ void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode, uint64_t C
  * 
  * @return the value of e_Cnd
  */
-uint64_t ExecuteStage::cond(uint64_t icode, uint64_t ifun) //add to header file!!!!!!!!!1
+uint64_t ExecuteStage::cond(uint64_t icode, uint64_t ifun) 
 {
     //base case
     if (icode != IJXX || icode != ICMOVXX)
@@ -121,37 +122,46 @@ uint64_t ExecuteStage::cond(uint64_t icode, uint64_t ifun) //add to header file!
     //unconiditonal jump/move
     if (ifun == UNCOND)
     {
+        return 1;
     }
     
     //less than or equal to zero
-    if ((ifun == LESSEQ) && (SF ^ OF | ZF))
+    if (ifun == LESSEQ)
     {
+        return (SF ^ OF) | ZF;
     }
     
     //less than zero
-    if ((ifun == LESS) && (SF ^ OF))
+    if (ifun == LESS)
     {
+        return (SF ^ OF);
     }
 
     //equal to zero
-    if ((ifun == EQUAL) && ZF)
+    if (ifun == EQUAL)
     {
+        return ZF;
     }
 
     //not equal to zero
-    if ((ifun == NOTEQUAL) && !ZF)
+    if (ifun == NOTEQUAL)
     {
+        return !ZF;
     }
 
     //greater than zero
-    if ((ifun == GREATER) && ((!SF ^ OF) & !ZF))
+    if (ifun == GREATER)
     {
+        return (!SF ^ OF) & !ZF;
     }
 
     //greater than or equal to zero
-    if ((ifun == GREATEREQ) && (!(SF^OF)))
+    if (ifun == GREATEREQ)
     {
+        return !(SF^OF);
     }
+    
+    return 0;
 }
 
 /*
