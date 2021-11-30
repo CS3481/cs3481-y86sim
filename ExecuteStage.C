@@ -102,6 +102,59 @@ void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode, uint64_t C
 }
 
 /*
+ * cond
+ * block in exec stage to perform rrmoq/cmovxx
+ *
+ * @param icode
+ * @param ifun
+ * 
+ * @return the value of e_Cnd
+ */
+uint64_t ExecuteStage::cond(uint64_t icode, uint64_t ifun) //add to header file!!!!!!!!!1
+{
+    //base case
+    if (icode != IJXX || icode != ICMOVXX)
+    {
+        return 0;
+    }
+    
+    //unconiditonal jump/move
+    if (ifun == UNCOND)
+    {
+    }
+    
+    //less than or equal to zero
+    if ((ifun == LESSEQ) && (SF ^ OF | ZF))
+    {
+    }
+    
+    //less than zero
+    if ((ifun == LESS) && (SF ^ OF))
+    {
+    }
+
+    //equal to zero
+    if ((ifun == EQUAL) && ZF)
+    {
+    }
+
+    //not equal to zero
+    if ((ifun == NOTEQUAL) && !ZF)
+    {
+    }
+
+    //greater than zero
+    if ((ifun == GREATER) && ((!SF ^ OF) & !ZF))
+    {
+    }
+
+    //greater than or equal to zero
+    if ((ifun == GREATEREQ) && (!(SF^OF)))
+    {
+    }
+}
+
+/*
  * setAluA
  * sets val of aluA
  *
