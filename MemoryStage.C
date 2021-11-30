@@ -86,6 +86,16 @@ void MemoryStage::setWInput(W * wreg, uint64_t stat, uint64_t icode, uint64_t va
     wreg->getdstM()->setInput(dstM);      
 }
 
+/*
+ * addr
+ * gets address for valM
+ *
+ * @param icode is icode
+ * @param valE is that
+ * @param valA is that
+ *
+ * @return address
+ */
 uint32_t MemoryStage::addr(uint64_t icode, uint64_t valE, uint64_t valA)
 {
     if (icode == IRMMOVQ || icode == IPUSHQ || icode == ICALL || icode == IMRMOVQ)
@@ -96,11 +106,27 @@ uint32_t MemoryStage::addr(uint64_t icode, uint64_t valE, uint64_t valA)
         return 0;
 }
 
+/*
+ * memRead
+ * true if read memory
+ *
+ * @param icode is icode
+ * 
+ * @return boolean if true
+ */
 bool MemoryStage::memRead(uint64_t icode)
 {
     return (icode == IMRMOVQ || icode == IPOPQ || icode == IRET);
 }
 
+/*
+ * memWrite
+ * writes memory
+ * 
+ * @param icode is that
+ *
+ * @return if true
+ */
 bool MemoryStage::memWrite(uint64_t icode)
 {
     return (icode == IRMMOVQ || icode == IPUSHQ || icode == ICALL);

@@ -34,13 +34,15 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     uint64_t icode = dreg->geticode()->getOutput(), ifun = dreg->getifun()->getOutput(), 
                 valC = dreg->getvalC()->getOutput(), dstE = RNONE, dstM = RNONE, srcA = RNONE, 
                 srcB = RNONE, stat = SAOK;  
-    uint64_t valA, valB;
+    uint64_t valA, valB, valP;
+
+    valP = dreg->getvalP()->getOutput();
     
     setSrcA(dreg, srcA, icode);
     setSrcB(dreg, srcB, icode); 
     setDstE(dreg, dstE, icode);
     setDstM(dreg, dstM, icode);
-    setValA(valA, srcA, mreg, wreg, eObj);
+    setValA(valA, srcA, mreg, wreg, eObj, icode, valP);
     setValB(valB, srcB, mreg, wreg, eObj);
     setEInput(ereg, stat, icode, ifun, dstE, dstM, valC, valA, valB, srcA, srcB);
     return false;
@@ -184,7 +186,7 @@ void DecodeStage::setDstM(D * dreg, uint64_t & dstM, uint64_t d_icode)
 
 /*
  * setValA
- * sets valA for next stage
+ * SET+FWD A
  *
  * @param valA is ref to valA
  * @param d_srcA is val of srcA in decode
@@ -192,17 +194,24 @@ void DecodeStage::setDstM(D * dreg, uint64_t & dstM, uint64_t d_icode)
  * @param wreg is ptr to writeback stage
  * @param eObj is ptr to Execute stage
  */
-void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg, ExecuteStage * eObj)
+void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg,
+                            ExecuteStage * eObj, uint64_t icode, uint64_t valP)
 {
     RegisterFile * reg = RegisterFile::getInstance();
     bool err = false;
-       
-    if (d_srcA == RNONE)
+    
+    if (icode == ICALL || icode == IJXX)
+        valA = valP;
+    else if (d_srcA == RNONE)
         valA = 0;
     else if (d_srcA == eObj->getDstE())
         valA = eObj->getValE();
+    else if (d_srcA == mreg->getdstM()->getOutput())
+        valA = mreg->getvalA()->getOutput(); //no val m, using valA instead for now
     else if (d_srcA == mreg->getdstE()->getOutput())
         valA = mreg->getvalE()->getOutput();
+    else if (d_srcA == wreg->getdstM()->getOutput())
+        valA = wreg->getvalM()->getOutput();
     else if (d_srcA == wreg->getdstE()->getOutput())
         valA = wreg->getvalE()->getOutput();
     else
@@ -211,7 +220,7 @@ void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg, 
 }
 /*
  * setValB
- * sets valB for next stage
+ * FWD B
  *
  * @param valB is ref to valB
  * @param d_srcB is srcB in decode stage
