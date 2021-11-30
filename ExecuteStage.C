@@ -37,13 +37,13 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     uint64_t aluB;
     uint64_t alufun;
     bool set_cc;
-
+    
+    Cnd = cond(icode, ifun);
     setAluA(ereg, aluA, icode);
     setAluB(ereg, aluB, icode);
     setAluFun(alufun, icode, ifun);
     setCC(set_cc, icode);
     setDstE(ereg, dstE, icode, Cnd);
-    Cnd = cond(icode, ifun);
 
     valE = ALU(alufun, aluA, aluB);
 
@@ -114,7 +114,7 @@ void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode, uint64_t C
 uint64_t ExecuteStage::cond(uint64_t icode, uint64_t ifun) 
 {
     //base case
-    if (icode != IJXX || icode != ICMOVXX)
+    if ((icode != IJXX) && (icode != ICMOVXX))
     {
         return 0;
     }
