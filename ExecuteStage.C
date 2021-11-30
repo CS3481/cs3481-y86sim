@@ -113,6 +113,12 @@ void ExecuteStage::setMInput(M * mreg, uint64_t stat, uint64_t icode, uint64_t C
  */
 uint64_t ExecuteStage::cond(uint64_t icode, uint64_t ifun) 
 {
+    ConditionCodes * cc = ConditionCodes::getInstance();
+    bool err = false;
+    bool sf = cc->getConditionCode(SF, err);
+    bool of = cc->getConditionCode(OF, err);
+    bool zf = cc->getConditionCode(ZF, err);
+
     //base case
     if ((icode != IJXX) && (icode != ICMOVXX))
     {
@@ -128,37 +134,37 @@ uint64_t ExecuteStage::cond(uint64_t icode, uint64_t ifun)
     //less than or equal to zero
     if (ifun == LESSEQ)
     {
-        return (SF ^ OF) | ZF;
+        return (sf ^ of) | zf;
     }
     
     //less than zero
     if (ifun == LESS)
     {
-        return (SF ^ OF);
+        return (sf ^ of);
     }
 
     //equal to zero
     if (ifun == EQUAL)
     {
-        return ZF;
+        return zf;
     }
 
     //not equal to zero
     if (ifun == NOTEQUAL)
     {
-        return !ZF;
+        return !zf;
     }
 
     //greater than zero
     if (ifun == GREATER)
     {
-        return (!SF ^ OF) & !ZF;
+        return (!sf ^ of) & !zf;
     }
 
     //greater than or equal to zero
     if (ifun == GREATEREQ)
     {
-        return !(SF^OF);
+        return !(sf^of);
     }
     
     return 0;
