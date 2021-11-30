@@ -8,6 +8,7 @@
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
+#include "MemoryStage.h"
 #include "ExecuteStage.h"
 #include "DecodeStage.h"
 #include "Status.h"
@@ -30,7 +31,8 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     M * mreg = (M *) pregs[MREG];
     W * wreg = (W *) pregs[WREG];
     ExecuteStage * eObj = (ExecuteStage *) stages[ESTAGE];
-
+    MemoryStage * mObj = (MemoryStage *) stages[MSTAGE];
+    
     uint64_t icode = dreg->geticode()->getOutput(), ifun = dreg->getifun()->getOutput(), 
                 valC = dreg->getvalC()->getOutput(), dstE = RNONE, dstM = RNONE, srcA = RNONE, 
                 srcB = RNONE, stat = SAOK;  
@@ -42,8 +44,8 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     setSrcB(dreg, srcB, icode); 
     setDstE(dreg, dstE, icode);
     setDstM(dreg, dstM, icode);
-    setValA(valA, srcA, mreg, wreg, eObj, icode, valP);
-    setValB(valB, srcB, mreg, wreg, eObj);
+    setValA(valA, srcA, mreg, wreg, eObj, mObj, icode, valP);
+    setValB(valB, srcB, mreg, wreg, eObj, mObj);
     setEInput(ereg, stat, icode, ifun, dstE, dstM, valC, valA, valB, srcA, srcB);
     return false;
 }
@@ -195,7 +197,7 @@ void DecodeStage::setDstM(D * dreg, uint64_t & dstM, uint64_t d_icode)
  * @param eObj is ptr to Execute stage
  */
 void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg,
-                            ExecuteStage * eObj, uint64_t icode, uint64_t valP)
+                            ExecuteStage * eObj, MemoryStage * mObj, uint64_t icode, uint64_t valP)
 {
     RegisterFile * reg = RegisterFile::getInstance();
     bool err = false;
@@ -207,7 +209,7 @@ void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg,
     else if (d_srcA == eObj->getDstE())
         valA = eObj->getValE();
     else if (d_srcA == mreg->getdstM()->getOutput())
-        valA = mreg->getvalA()->getOutput(); //no val m, using valA instead for now
+        valA = mObj->getValM(); 
     else if (d_srcA == mreg->getdstE()->getOutput())
         valA = mreg->getvalE()->getOutput();
     else if (d_srcA == wreg->getdstM()->getOutput())
@@ -228,17 +230,22 @@ void DecodeStage::setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg,
  * @param wreg is ptr to writeback stage
  * @param eObj is ptr to execute stage
  */
-void DecodeStage::setValB(uint64_t & valB, uint64_t d_srcB, M * mreg, W * wreg, ExecuteStage * eObj)
+void DecodeStage::setValB(uint64_t & valB, uint64_t d_srcB, M * mreg, W * wreg, 
+                            ExecuteStage * eObj, MemoryStage * mObj)
 {
     RegisterFile * reg = RegisterFile::getInstance();
-    bool err = false;
+    bool err = false;        
     
     if (d_srcB == RNONE)
         valB = 0;
     else if (d_srcB == eObj->getDstE())
-         valB = eObj->getValE();
+        valB = eObj->getValE();
+    else if (d_srcB == mreg->getdstM()->getOutput())
+        valB = mObj->getValM();
     else if (d_srcB == mreg->getdstE()->getOutput())
         valB = mreg->getvalE()->getOutput();
+    else if (d_srcB == wreg->getdstM()->getOutput())
+        valB = wreg->getvalM()->getOutput();    
     else if (d_srcB == wreg->getdstE()->getOutput())
         valB = wreg->getvalE()->getOutput();
     else
