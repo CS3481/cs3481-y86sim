@@ -113,6 +113,9 @@ void DecodeStage::setEInput(E * ereg, uint64_t stat, uint64_t icode,
  */
 void DecodeStage::setSrcA(D * dreg, uint64_t & srcA, uint64_t d_icode)
 {
+    if (srcA == RNONE)
+        srcA = 0;
+
     if (d_icode == IRRMOVQ || d_icode == IRMMOVQ || d_icode == IOPQ
         || d_icode == IPUSHQ)
     {
@@ -134,6 +137,9 @@ void DecodeStage::setSrcA(D * dreg, uint64_t & srcA, uint64_t d_icode)
  */
 void DecodeStage::setSrcB(D * dreg, uint64_t & srcB, uint64_t d_icode) 
 {
+    if (srcB == RNONE)
+        srcB = 0;
+
     if (d_icode == IOPQ || d_icode == IRMMOVQ || d_icode == IMRMOVQ)
         srcB = dreg->getrB()->getOutput(); 
     else if (d_icode == IPUSHQ || d_icode == IPOPQ || d_icode == ICALL
