@@ -42,13 +42,12 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    ifun = Tools::getBits(byte, 0, 3);
    icode = Tools::getBits(byte, 4, 7);  
    
-   //lab 11 start MAY BE WRONG
+   //lab 11 pt II
    if (mem_error)
    {
        icode = INOP;
        ifun = FNONE;
    }
-   //lab11 end
 
    bool checkNeedIds = needRegIds(icode);
    bool checkNeedValC = needValC(icode);
@@ -72,9 +71,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        buildValC(valC, byteArray);
    }
    
-   //lab11 start
+   //lab11 pt II
    stat = setStat(icode, mem_error); 
-   //lab11 end
 
 
    freg->getpredPC()->setInput(prdct);

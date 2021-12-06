@@ -14,6 +14,7 @@ class FetchStage: public Stage
       void getRegIds(uint64_t & rA, uint64_t & rB, uint8_t byte);
       void buildValC(uint64_t & valC, uint8_t byte[]);
       bool instrValid(uint64_t icode);
+      uint64_t setStat(uint64_t icode, bool mem_error);
 
    public:
       bool doClockLow(PipeReg ** pregs, Stage ** stages);
