@@ -44,7 +44,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    
    bool checkNeedIds = needRegIds(icode);
    bool checkNeedValC = needValC(icode);
-   
+
    valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
    uint64_t prdct = predictPC(icode, valC, valP);
     
@@ -63,12 +63,42 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        }
        buildValC(valC, byteArray);
    }
-    
+   
+
    freg->getpredPC()->setInput(prdct);
 
    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
    return false;
 }
+
+/*
+ * instrValid
+ * returns true if icode if valid
+ *
+ * @param icode is that
+ *
+ * @return boolean true if icode is valid
+ */
+bool FetchStage::instrValid(uint64_t icode)
+{
+    if (icode == INOP || icode == IHALT || icode == IRRMOQ || icode == IIRMOVQ
+            || icode == IMRMOVQ || icode == IOPQ || icode == IJXX || icode == ICALL
+            || icode == IRET || icode == IPUSHQ || icode == IPOPQ)
+        return true;
+    else
+        return false;
+}
+
+
+/*
+ * setStat
+ * sets the val for stat
+ */
+uint64_t FetchStage::setStat(uint64_t icode) //add header and call
+{
+    //what is mem_error?
+}
+
 
 /*
  * PCincrement
