@@ -34,22 +34,30 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
    f_pc = selectPC(freg, mreg, wreg, f_pc);
-   
+
    Memory * mem = Memory::getInstance();
-   bool error;
-   uint8_t byte = mem->getByte(f_pc, error); //gets first byte
+   bool mem_error;
+   uint8_t byte = mem->getByte(f_pc, mem_error); //gets first byte
    
    ifun = Tools::getBits(byte, 0, 3);
    icode = Tools::getBits(byte, 4, 7);  
    
+   //lab 11 start MAY BE WRONG
+   if (mem_error)
+   {
+       icode = INOP;
+       ifun = FNONE;
+   }
+   //lab11 end
+
    bool checkNeedIds = needRegIds(icode);
    bool checkNeedValC = needValC(icode);
-
+    
    valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
    uint64_t prdct = predictPC(icode, valC, valP);
     
    //for getRegIds
-   byte = mem->getByte(f_pc + 1, error);
+   byte = mem->getByte(f_pc + 1, mem_error);
    if (checkNeedIds)
        getRegIds(rA, rB, byte);
 
@@ -59,11 +67,15 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
        uint8_t byteArray[8];
        for (int i = 2; i < 10; i++)
        {
-           byteArray[i-2] = mem->getByte(f_pc + i, error);
+           byteArray[i-2] = mem->getByte(f_pc + i, mem_error);
        }
        buildValC(valC, byteArray);
    }
    
+   //lab11 start
+   stat = setStat(icode, mem_error); 
+   //lab11 end
+
 
    freg->getpredPC()->setInput(prdct);
 
@@ -81,7 +93,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
  */
 bool FetchStage::instrValid(uint64_t icode)
 {
-    if (icode == INOP || icode == IHALT || icode == IRRMOQ || icode == IIRMOVQ
+    if (icode == INOP || icode == IHALT || icode == IRRMOVQ || icode == IIRMOVQ
             || icode == IMRMOVQ || icode == IOPQ || icode == IJXX || icode == ICALL
             || icode == IRET || icode == IPUSHQ || icode == IPOPQ)
         return true;
@@ -93,10 +105,30 @@ bool FetchStage::instrValid(uint64_t icode)
 /*
  * setStat
  * sets the val for stat
+ *
+ * @param icode is that
+ * @param mem_error is error in mem from doClockLow
+ *
+ * @return val of stat
  */
-uint64_t FetchStage::setStat(uint64_t icode) //add header and call
+uint64_t FetchStage::setStat(uint64_t icode, bool mem_error)
 {
-    //what is mem_error?
+    if (mem_error)
+    {
+        return SADR;
+    }
+    else if (!instrValid(icode))
+    {
+        return SINS;
+    }
+    else if (icode == IHALT)
+    {
+        return SHLT;
+    }
+    else
+    {
+        return SAOK;
+    }
 }
 
 
