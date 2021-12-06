@@ -5,13 +5,16 @@
 #include "PipeReg.h"
 #include "E.h"
 #include "M.h"
+#include "W.h"
 #include "Stage.h"
+#include "MemoryStage.h"
 #include "ExecuteStage.h"
 #include "Status.h"
 #include "Debug.h"
 #include "Instructions.h"
 #include "ConditionCodes.h"
 #include "Tools.h"
+
 
 /*
  * doClockLow
@@ -25,7 +28,10 @@
 bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     E * ereg = (E *) pregs[EREG];
-    M * mreg = (M *) pregs[MREG];    
+    M * mreg = (M *) pregs[MREG];
+    W * wreg = (W *) pregs[WREG];
+    MemoryStage * mObj = (MemoryStage *) stages[MSTAGE];
+    
     uint64_t icode = ereg->geticode()->getOutput(), valA = ereg->getvalA()->getOutput(), 
             dstM = ereg->getdstM()->getOutput(), Cnd = 0, stat = SAOK, 
             ifun = ereg->getifun()->getOutput();
@@ -42,7 +48,7 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     setAluA(ereg, aluA, icode);
     setAluB(ereg, aluB, icode);
     setAluFun(alufun, icode, ifun);
-    setCC(set_cc, icode);
+    setCC(set_cc, icode, wreg, mObj);
     setDstE(ereg, dstE, icode, Cnd);
 
     valE = ALU(alufun, aluA, aluB);
@@ -236,7 +242,7 @@ void ExecuteStage::setAluFun(uint64_t & alufun, uint64_t e_icode, uint64_t ifun)
  * @param set_cc is ref to set_cc
  * @param e_icode is val of icode in execute stag
  */
-void ExecuteStage::setCC(bool & set_cc, uint64_t e_icode)
+void ExecuteStage::setCC(bool & set_cc, uint64_t e_icode, W * wreg, MemoryStage * mObj)
 {
     set_cc = (e_icode == IOPQ);
 }

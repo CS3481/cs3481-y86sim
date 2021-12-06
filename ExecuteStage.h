@@ -7,7 +7,7 @@ class ExecuteStage : public Stage
         void setAluA(E * ereg, uint64_t & aluA, uint64_t e_icode);
         void setAluB(E * ereg, uint64_t & aluB, uint64_t e_icode);
         void setAluFun(uint64_t & alufun, uint64_t e_icode, uint64_t ifun);
-        void setCC(bool & set_cc, uint64_t e_icode);
+        void setCC(bool & set_cc, uint64_t e_icode, W * wreg, MemoryStage * mObj);
         void setDstE(E * ereg, uint64_t & dstE, uint64_t e_icode, uint64_t e_Cnd);
         void setConditionCodes(uint64_t valE, uint64_t aluA, uint64_t aluB, uint64_t alufun);
         uint64_t ALU(uint64_t alufun, uint64_t aluA, uint64_t aluB);
