@@ -14,6 +14,8 @@ class ExecuteStage : public Stage
         uint64_t ALU(uint64_t alufun, uint64_t aluA, uint64_t aluB);
         uint64_t cond(uint64_t icode, uint64_t ifun);
         void calculateControlSignals(MemoryStage * mObj, W * wreg);
+        void normalM(M * mreg);
+        void bubbleM(M * mreg);
 
     public:
         bool doClockLow(PipeReg ** pregs, Stage ** stages);

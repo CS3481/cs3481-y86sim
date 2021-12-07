@@ -79,25 +79,43 @@ void ExecuteStage::doClockHigh(PipeReg ** pregs)
     M * mreg = (M *) pregs[MREG];
     
     if (bubble)
-    {
-        mreg->getstat()->bubble(SAOK);
-        mreg->geticode()->bubble(INOP);
-        mreg->getCnd()->bubble();
-        mreg->getvalE()->bubble();
-        mreg->getvalA()->bubble();
-        mreg->getdstE()->bubble(RNONE);
-        mreg->getdstM()->bubble(RNONE);
-    }
+        bubbleM(mreg);
     else
-    {
-        mreg->getstat()->normal();
-        mreg->geticode()->normal();
-        mreg->getCnd()->normal();
-        mreg->getvalE()->normal();
-        mreg->getvalA()->normal();
-        mreg->getdstE()->normal();
-        mreg->getdstM()->normal();
-    }
+        normalM(mreg);
+}
+
+/*
+ * normal
+ * regular action from doclockhigh
+ *
+ * @param mreg is somethin
+ */
+void ExecuteStage::normalM(M * mreg)
+{
+    mreg->getstat()->normal();
+    mreg->geticode()->normal();
+    mreg->getCnd()->normal();
+    mreg->getvalE()->normal();
+    mreg->getvalA()->normal();
+    mreg->getdstE()->normal();
+    mreg->getdstM()->normal();
+}
+
+/*
+ * bubble
+ * bubble action for doclockhigh
+ *
+ * @param mreg is that
+ */
+void ExecuteStage::bubbleM(M * mreg)
+{
+    mreg->getstat()->bubble(SAOK);
+    mreg->geticode()->bubble(INOP);
+    mreg->getCnd()->bubble();
+    mreg->getvalE()->bubble();
+    mreg->getvalA()->bubble();
+    mreg->getdstE()->bubble(RNONE);
+    mreg->getdstM()->bubble(RNONE);
 }
 
 /*
