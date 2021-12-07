@@ -26,59 +26,59 @@
  */
 bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
-   F * freg = (F *) pregs[FREG];
-   D * dreg = (D *) pregs[DREG];
-   M * mreg = (M *) pregs[MREG];
-   W * wreg = (W *) pregs[WREG];
-   uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
-   uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
+    F * freg = (F *) pregs[FREG];
+    D * dreg = (D *) pregs[DREG];
+    M * mreg = (M *) pregs[MREG];
+    W * wreg = (W *) pregs[WREG];
+    uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
+    uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
-   f_pc = selectPC(freg, mreg, wreg, f_pc);
+    f_pc = selectPC(freg, mreg, wreg, f_pc);
 
-   Memory * mem = Memory::getInstance();
-   bool mem_error;
-   uint8_t byte = mem->getByte(f_pc, mem_error); //gets first byte
+    Memory * mem = Memory::getInstance();
+    bool mem_error;
+    uint8_t byte = mem->getByte(f_pc, mem_error); //gets first byte
    
-   ifun = Tools::getBits(byte, 0, 3);
-   icode = Tools::getBits(byte, 4, 7);  
-   
-   //lab 11 pt II
-   if (mem_error)
-   {
-       icode = INOP;
-       ifun = FNONE;
-   }
-
-   bool checkNeedIds = needRegIds(icode);
-   bool checkNeedValC = needValC(icode);
+    bool checkNeedIds = needRegIds(icode);
+    bool checkNeedValC = needValC(icode);
     
-   valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
-   uint64_t prdct = predictPC(icode, valC, valP);
+    valP = PCincrement(f_pc, checkNeedIds, checkNeedValC);
+    uint64_t prdct = predictPC(icode, valC, valP);
     
-   //for getRegIds
-   byte = mem->getByte(f_pc + 1, mem_error);
-   if (checkNeedIds)
-       getRegIds(rA, rB, byte);
+    //for getRegIds
+    byte = mem->getByte(f_pc + 1, mem_error);
+    if (checkNeedIds)
+        getRegIds(rA, rB, byte);
 
-   //for buildValC
-   if (checkNeedValC)
-   {
-       uint8_t byteArray[8];
-       for (int i = 2; i < 10; i++)
-       {
-           byteArray[i-2] = mem->getByte(f_pc + i, mem_error);
-       }
-       buildValC(valC, byteArray);
-   }
+    //for buildValC
+    if (checkNeedValC)
+    {
+        uint8_t byteArray[8];
+        for (int i = 2; i < 10; i++)
+        {
+            byteArray[i-2] = mem->getByte(f_pc + i, mem_error);
+        }
+        buildValC(valC, byteArray);
+    }
+ 
+    if (mem_error)
+    {
+        icode = INOP;
+        ifun = FNONE;
+    }
+    else
+    {
+        ifun = Tools::getBits(byte, 0, 3);
+        icode = Tools::getBits(byte, 4, 7);
+    }
+
+    stat = setStat(icode, mem_error);
    
-   //lab11 pt II
-   stat = setStat(icode, mem_error); 
+   
+    freg->getpredPC()->setInput(prdct);
 
-
-   freg->getpredPC()->setInput(prdct);
-
-   setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
-   return false;
+    setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
+    return false;
 }
 
 /*
