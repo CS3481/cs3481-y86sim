@@ -44,6 +44,10 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     uint64_t alufun;
     bool set_cc;
     
+    //lab11 pt II
+    bubble = false;
+    calculateControlSignals(mObj, wreg);
+
     Cnd = cond(icode, ifun);
     setAluA(ereg, aluA, icode);
     setAluB(ereg, aluB, icode);
@@ -73,14 +77,42 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 void ExecuteStage::doClockHigh(PipeReg ** pregs)
 {
     M * mreg = (M *) pregs[MREG];
+    
+    if (bubble)
+    {
+        mreg->getstat()->bubble(SAOK);
+        mreg->geticode()->bubble(INOP);
+        mreg->getCnd()->bubble();
+        mreg->getvalE()->bubble();
+        mreg->getvalA()->bubble();
+        mreg->getdstE()->bubble(RNONE);
+        mreg->getdstM()->bubble(RNONE);
+    }
+    else
+    {
+        mreg->getstat()->normal();
+        mreg->geticode()->normal();
+        mreg->getCnd()->normal();
+        mreg->getvalE()->normal();
+        mreg->getvalA()->normal();
+        mreg->getdstE()->normal();
+        mreg->getdstM()->normal();
+    }
+}
 
-    mreg->getstat()->normal();
-    mreg->geticode()->normal();
-    mreg->getCnd()->normal();
-    mreg->getvalE()->normal();
-    mreg->getvalA()->normal();
-    mreg->getdstE()->normal();
-    mreg->getdstM()->normal();
+/*
+ * calculateControlSignals
+ * does that
+ *
+ * @return boolean if true
+ */
+void ExecuteStage::calculateControlSignals(MemoryStage * mObj, W * wreg)
+{
+    uint64_t m_stat = mObj->getStat();
+    uint64_t W_stat = wreg->getstat()->getOutput();
+
+    bubble = (m_stat == SADR || m_stat == SINS || m_stat == SHLT) || 
+        (W_stat == SADR || W_stat == SINS || W_stat == SHLT);
 }
 
 /*
@@ -244,7 +276,12 @@ void ExecuteStage::setAluFun(uint64_t & alufun, uint64_t e_icode, uint64_t ifun)
  */
 void ExecuteStage::setCC(bool & set_cc, uint64_t e_icode, W * wreg, MemoryStage * mObj)
 {
-    set_cc = (e_icode == IOPQ);
+    uint64_t m_stat = mObj->getStat();
+    uint64_t W_stat = wreg->getstat()->getOutput();
+
+    set_cc = (e_icode == IOPQ) && 
+        (m_stat != SADR || m_stat != SINS || m_stat != SHLT) && 
+        (W_stat != SADR || W_stat != SINS || W_stat != SHLT);
 }
 
 /*
