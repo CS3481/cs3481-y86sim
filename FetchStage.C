@@ -89,7 +89,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 bool FetchStage::instrValid(uint64_t icode)
 {
     if (icode == INOP || icode == IHALT || icode == IRRMOVQ || icode == IIRMOVQ
-            || icode == IMRMOVQ || icode == IOPQ || icode == IJXX || icode == ICALL
+            || icode == IMRMOVQ || icode == IRMMOVQ || icode == IOPQ || icode == IJXX || icode == ICALL
             || icode == IRET || icode == IPUSHQ || icode == IPOPQ)
         return true;
     else

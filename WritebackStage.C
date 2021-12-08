@@ -49,3 +49,4 @@ void WritebackStage::doClockHigh(PipeReg ** pregs)
     reg->writeRegister(wreg->getvalE()->getOutput(), wreg->getdstE()->getOutput(), err);
     reg->writeRegister(wreg->getvalM()->getOutput(), wreg->getdstM()->getOutput(), err);
 }
+
