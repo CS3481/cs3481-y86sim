@@ -36,6 +36,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     M * mreg = (M *) pregs[MREG];
     W * wreg = (W *) pregs[WREG];
     DecodeStage * dObj = (DecodeStage *) stages[DSTAGE];
+    ExecuteStage * eObj = (ExecuteStage *) stages[ESTAGE];
     uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
     uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
     F_stall = false;
@@ -81,12 +82,38 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     freg->getpredPC()->setInput(prdct);
     
-    calculateControlSignals(dObj, ereg);
+    calculateControlSignals(dObj, eObj, ereg);
 
     setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
     return false;
 }
 
+/*
+ * bubbleD
+ * bubbles D reg
+ *
+ * @param pregs is pregs idk
+ */
+void FetchStage::bubbleD(PipeReg ** pregs)
+{
+    D * dreg = (D *) pregs[DREG];
+
+    dreg->getstat()->bubble(SAOK);
+    dreg->geticode()->bubble(INOP);
+    dreg->getifun()->bubble();
+    dreg->getrA()->bubble(RNONE);
+    dreg->getrB()->bubble(RNONE);
+    dreg->getvalC()->bubble();
+    dreg->getvalP()->bubble();
+}
+
+/*
+ * calcBubble
+ * calculates bubble
+ *
+ * @param eObj is an ExecuteStage object
+ * @param ereg E obj pointer
+ */
 void FetchStage::calcBubble(ExecuteStage * eObj, E * ereg)
 {
     D_bubble = (ereg->geticode()->getOutput() == IJXX && eObj->getCnd() != 1);
@@ -124,10 +151,11 @@ void FetchStage::calcDStall(DecodeStage * dObj, E * ereg)
  * calculateControlSignals
  * calculates control signals by calling calcFStall and calcDStall
  */
-void FetchStage::calculateControlSignals(DecodeStage * dObj, E * ereg)
+void FetchStage::calculateControlSignals(DecodeStage * dObj, ExecuteStage * eObj, E * ereg)
 {
     calcFStall(dObj, ereg);
     calcDStall(dObj, ereg);
+    calcBubble(eObj, ereg);
 }
 
 /*
@@ -286,16 +314,30 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
    if (!F_stall)
       freg->getpredPC()->normal();
    
+    if (D_bubble)
+        bubbleD(pregs);
+
    if (!D_stall)
-   {
-      dreg->getstat()->normal();
-      dreg->geticode()->normal();
-      dreg->getifun()->normal();
-      dreg->getrA()->normal();
-      dreg->getrB()->normal();
-      dreg->getvalC()->normal();
-      dreg->getvalP()->normal();
-   }
+       normalD(pregs);
+}
+
+/*
+ * normalD
+ * does normal things
+ *
+ * @param pregs is a parameter
+ */
+void FetchStage::normalD(PipeReg ** pregs)
+{
+    D * dreg = (D *) pregs[DREG];
+
+    dreg->getstat()->normal();
+    dreg->geticode()->normal();
+    dreg->getifun()->normal();
+    dreg->getrA()->normal();
+    dreg->getrB()->normal();
+    dreg->getvalC()->normal();
+    dreg->getvalP()->normal();
 }
 
 /* setDInput

@@ -20,8 +20,10 @@ class FetchStage: public Stage
       uint64_t setStat(uint64_t icode, bool mem_error);
       void calcFStall(DecodeStage * dObj, E * ereg); 
       void calcDStall(DecodeStage * dObj, E * ereg);
-      void calculateControlSignals(DecodeStage * dObj, E * ereg);
+      void calculateControlSignals(DecodeStage * dObj, ExecuteStage * eObj, E * ereg);
       void calcBubble(ExecuteStage * eObj, E * ereg);
+      void bubbleD(PipeReg ** pregs);
+      void normalD(PipeReg ** pregs);
    public:
       bool doClockLow(PipeReg ** pregs, Stage ** stages);
       void doClockHigh(PipeReg ** pregs);
