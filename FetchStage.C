@@ -81,10 +81,15 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     freg->getpredPC()->setInput(prdct);
     
-    calculateControlSignals(dObj, ereg, icode);
+    calculateControlSignals(dObj, ereg);
 
     setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
     return false;
+}
+
+void FetchStage::calcBubble(ExecuteStage * eObj, E * ereg)
+{
+    D_bubble = (ereg->geticode()->getOutput() == IJXX && eObj->getCnd() != 1);
 }
 
 /*
@@ -95,9 +100,10 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
  * @param ereg for getting vals
  * @param icode is icode
  */
-void FetchStage::calcFStall(DecodeStage * dObj, E * ereg, uint64_t icode)
+void FetchStage::calcFStall(DecodeStage * dObj, E * ereg)
 {
-    F_stall = ((icode == IMRMOVQ || icode == IPOPQ) && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()));
+    F_stall = ((ereg->geticode()->getOutput() == IMRMOVQ || ereg->geticode()->getOutput() == IPOPQ) 
+       && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()));
 }
 
 /*
@@ -108,19 +114,20 @@ void FetchStage::calcFStall(DecodeStage * dObj, E * ereg, uint64_t icode)
  * @param ereg for getting vals
  * @param icode is icode
  */
-void FetchStage::calcDStall(DecodeStage * dObj, E * ereg, uint64_t icode)
+void FetchStage::calcDStall(DecodeStage * dObj, E * ereg)
 {
-    D_stall = ((icode == IMRMOVQ || icode == IPOPQ) && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()));
+    D_stall = ((ereg->geticode()->getOutput() == IMRMOVQ || ereg->geticode()->getOutput() == IPOPQ)
+       && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()));
 }
 
 /*
  * calculateControlSignals
  * calculates control signals by calling calcFStall and calcDStall
  */
-void FetchStage::calculateControlSignals(DecodeStage * dObj, E * ereg, uint64_t icode)
+void FetchStage::calculateControlSignals(DecodeStage * dObj, E * ereg)
 {
-    calcFStall(dObj, ereg, icode);
-    calcDStall(dObj, ereg, icode);
+    calcFStall(dObj, ereg);
+    calcDStall(dObj, ereg);
 }
 
 /*
