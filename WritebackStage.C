@@ -29,17 +29,9 @@ bool WritebackStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     {
         return true;
     }
-    else
-    {
-        return false;
-    }
     
-    /*
-    if (icode == 0)
-        return true;
-    else
-        return false;
-    */
+    return false;
+    
 }
 
 /*

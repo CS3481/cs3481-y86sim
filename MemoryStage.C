@@ -33,7 +33,8 @@ bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     bool mem_error = false;
     valM = 0;
     uint32_t address = addr(icode, valE, valA);
-    
+    stat = mreg->getstat()->getOutput();
+
     if (memRead(icode))
         valM = mem->getLong(address, mem_error); 
 
@@ -41,14 +42,9 @@ bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         mem->putLong(valA, address, mem_error);    
     
     //lab11 pt II
-    stat = SAOK;
     if (mem_error)
     {
         stat = SADR;
-    }
-    else
-    {
-        stat = mreg->getstat()->getOutput();
     }
 
     setWInput(wreg, stat, icode, valE, valM, dstE, dstM);

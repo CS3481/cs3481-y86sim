@@ -37,8 +37,17 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     Memory * mem = Memory::getInstance();
     bool mem_error;
-    uint8_t byte = mem->getByte(f_pc, mem_error); //gets first byte
-   
+    uint8_t byte = mem->getByte(f_pc, mem_error); //gets first byte   
+    ifun = Tools::getBits(byte, 0, 3);
+    icode = Tools::getBits(byte, 4, 7); 
+    
+    //lab11
+    if (mem_error)
+    {
+        icode = INOP;
+        ifun = FNONE;
+    }
+
     bool checkNeedIds = needRegIds(icode);
     bool checkNeedValC = needValC(icode);
     
@@ -60,23 +69,11 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         }
         buildValC(valC, byteArray);
     }
- 
-    if (mem_error)
-    {
-        icode = INOP;
-        ifun = FNONE;
-    }
-    else
-    {
-        ifun = Tools::getBits(byte, 0, 3);
-        icode = Tools::getBits(byte, 4, 7);
-    }
-
+    
     stat = setStat(icode, mem_error);
-   
-   
-    freg->getpredPC()->setInput(prdct);
 
+    freg->getpredPC()->setInput(prdct);
+    
     setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
     return false;
 }
@@ -115,18 +112,18 @@ uint64_t FetchStage::setStat(uint64_t icode, bool mem_error)
     {
         return SADR;
     }
-    else if (!instrValid(icode))
+    
+    if (!instrValid(icode))
     {
         return SINS;
     }
-    else if (icode == IHALT)
+    
+    if (icode == IHALT)
     {
         return SHLT;
     }
-    else
-    {
-        return SAOK;
-    }
+    
+    return SAOK;
 }
 
 

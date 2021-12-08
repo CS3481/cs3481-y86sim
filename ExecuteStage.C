@@ -33,8 +33,8 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     MemoryStage * mObj = (MemoryStage *) stages[MSTAGE];
     
     uint64_t icode = ereg->geticode()->getOutput(), valA = ereg->getvalA()->getOutput(), 
-            dstM = ereg->getdstM()->getOutput(), Cnd = 0, stat = SAOK, 
-            ifun = ereg->getifun()->getOutput();
+            dstM = ereg->getdstM()->getOutput(), Cnd = 0, 
+            stat = ereg->getstat()->getOutput(), ifun = ereg->getifun()->getOutput();
 
     dstE = ereg->getdstE()->getOutput();
     valE = ereg->getvalC()->getOutput();
@@ -44,16 +44,10 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     uint64_t alufun;
     bool set_cc;
     
-    //lab11 pt II
-    bubble = false;
-    calculateControlSignals(mObj, wreg);
-
-    Cnd = cond(icode, ifun);
     setAluA(ereg, aluA, icode);
     setAluB(ereg, aluB, icode);
     setAluFun(alufun, icode, ifun);
-    setCC(set_cc, icode, wreg, mObj);
-    setDstE(ereg, dstE, icode, Cnd);
+    set_cc = setCC(icode, wreg, mObj);
 
     valE = ALU(alufun, aluA, aluB);
 
@@ -61,9 +55,16 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     {
         setConditionCodes(valE, aluA, aluB, alufun);   
     } 
+    
+    Cnd = cond(icode, ifun);
+    setDstE(ereg, dstE, icode, Cnd);
+    
+    //bubble = calculateControlSignals(mObj, wreg);
         
     setMInput(mreg, stat, icode, Cnd, valE, valA, dstE, dstM);
-
+    
+    bubble = calculateControlSignals(mObj, wreg);
+     
     return false;
 
 }
@@ -124,13 +125,18 @@ void ExecuteStage::bubbleM(M * mreg)
  *
  * @return boolean if true
  */
-void ExecuteStage::calculateControlSignals(MemoryStage * mObj, W * wreg)
+bool ExecuteStage::calculateControlSignals(MemoryStage * mObj, W * wreg)
 {
     uint64_t m_stat = mObj->getStat();
     uint64_t W_stat = wreg->getstat()->getOutput();
 
-    bubble = (m_stat == SADR || m_stat == SINS || m_stat == SHLT) || 
-        (W_stat == SADR || W_stat == SINS || W_stat == SHLT);
+    if ((m_stat == SADR || m_stat == SINS || m_stat == SHLT) || 
+        (W_stat == SADR || W_stat == SINS || W_stat == SHLT))
+    {
+        return true;
+    }
+    else
+        return false;
 }
 
 /*
@@ -292,14 +298,19 @@ void ExecuteStage::setAluFun(uint64_t & alufun, uint64_t e_icode, uint64_t ifun)
  * @param set_cc is ref to set_cc
  * @param e_icode is val of icode in execute stag
  */
-void ExecuteStage::setCC(bool & set_cc, uint64_t e_icode, W * wreg, MemoryStage * mObj)
+bool ExecuteStage::setCC(uint64_t e_icode, W * wreg, MemoryStage * mObj)
 {
     uint64_t m_stat = mObj->getStat();
     uint64_t W_stat = wreg->getstat()->getOutput();
 
-    set_cc = (e_icode == IOPQ) && 
-        (m_stat != SADR || m_stat != SINS || m_stat != SHLT) && 
-        (W_stat != SADR || W_stat != SINS || W_stat != SHLT);
+    if ((e_icode == IOPQ) && 
+        (m_stat != SADR && m_stat != SINS && m_stat != SHLT) && 
+        (W_stat != SADR && W_stat != SINS && W_stat != SHLT))
+    {
+        return true;
+    }
+    else
+        return false;
 }
 
 /*
