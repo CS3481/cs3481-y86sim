@@ -18,10 +18,10 @@ class FetchStage: public Stage
       void buildValC(uint64_t & valC, uint8_t byte[]);
       bool instrValid(uint64_t icode);
       uint64_t setStat(uint64_t icode, bool mem_error);
-      void calcFStall(DecodeStage * dObj, E * ereg); 
+      void calcFStall(DecodeStage * dObj, E * ereg, D * dreg, M * mreg); 
       void calcDStall(DecodeStage * dObj, E * ereg);
-      void calculateControlSignals(DecodeStage * dObj, ExecuteStage * eObj, E * ereg);
-      void calcBubble(ExecuteStage * eObj, E * ereg);
+      void calculateControlSignals(DecodeStage * dObj, ExecuteStage * eObj, E * ereg, D * dreg, M * mreg);
+      void calcBubble(DecodeStage * dObj, ExecuteStage * eObj, E * ereg, D * dreg, M * mreg);
       void bubbleD(PipeReg ** pregs);
       void normalD(PipeReg ** pregs);
    public:

@@ -82,7 +82,7 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     freg->getpredPC()->setInput(prdct);
     
-    calculateControlSignals(dObj, eObj, ereg);
+    calculateControlSignals(dObj, eObj, ereg, dreg, mreg);
 
     setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
     return false;
@@ -114,9 +114,12 @@ void FetchStage::bubbleD(PipeReg ** pregs)
  * @param eObj is an ExecuteStage object
  * @param ereg E obj pointer
  */
-void FetchStage::calcBubble(ExecuteStage * eObj, E * ereg)
+void FetchStage::calcBubble(DecodeStage * dObj, ExecuteStage * eObj, E * ereg, D * dreg, M * mreg)
 {
-    D_bubble = (ereg->geticode()->getOutput() == IJXX && eObj->getCnd() != 1);
+    D_bubble = ((ereg->geticode()->getOutput() == IJXX && !(eObj->getCnd())) ||
+       !((ereg->geticode()->getOutput() == IMRMOVQ || ereg->geticode()->getOutput() == IPOPQ) &&
+        (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()) &&
+         (dreg->geticode()->getOutput() == IRET || ereg->geticode()->getOutput() == IRET || mreg->geticode()->getOutput())));
 }
 
 /*
@@ -127,10 +130,11 @@ void FetchStage::calcBubble(ExecuteStage * eObj, E * ereg)
  * @param ereg for getting vals
  * @param icode is icode
  */
-void FetchStage::calcFStall(DecodeStage * dObj, E * ereg)
+void FetchStage::calcFStall(DecodeStage * dObj, E * ereg, D * dreg, M * mreg)
 {
     F_stall = ((ereg->geticode()->getOutput() == IMRMOVQ || ereg->geticode()->getOutput() == IPOPQ) 
-       && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()));
+       && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()) ||
+          (dreg->geticode()->getOutput() == IRET || ereg->geticode()->getOutput() == IRET || mreg->geticode()->getOutput() == IRET));
 }
 
 /*
@@ -151,11 +155,11 @@ void FetchStage::calcDStall(DecodeStage * dObj, E * ereg)
  * calculateControlSignals
  * calculates control signals by calling calcFStall and calcDStall
  */
-void FetchStage::calculateControlSignals(DecodeStage * dObj, ExecuteStage * eObj, E * ereg)
+void FetchStage::calculateControlSignals(DecodeStage * dObj, ExecuteStage * eObj, E * ereg, D * dreg, M * mreg)
 {
-    calcFStall(dObj, ereg);
+    calcFStall(dObj, ereg, dreg, mreg);
     calcDStall(dObj, ereg);
-    calcBubble(eObj, ereg);
+    calcBubble(dObj, eObj, ereg, dreg, mreg);
 }
 
 /*
