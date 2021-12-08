@@ -3,11 +3,15 @@
 #include "RegisterFile.h"
 #include "PipeRegField.h"
 #include "PipeReg.h"
+#include "E.h"
 #include "F.h"
 #include "D.h"
 #include "M.h"
 #include "W.h"
 #include "Stage.h"
+#include "MemoryStage.h"
+#include "ExecuteStage.h"
+#include "DecodeStage.h"
 #include "FetchStage.h"
 #include "Status.h"
 #include "Debug.h"
@@ -28,8 +32,10 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 {
     F * freg = (F *) pregs[FREG];
     D * dreg = (D *) pregs[DREG];
+    E * ereg = (E *) pregs[EREG];
     M * mreg = (M *) pregs[MREG];
     W * wreg = (W *) pregs[WREG];
+    DecodeStage * dObj = (DecodeStage *) stages[DSTAGE];
     uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
     uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
 
@@ -74,8 +80,46 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
 
     freg->getpredPC()->setInput(prdct);
     
+    calculateControlSignals(dObj, ereg, icode);
+
     setDInput(dreg, stat, icode, ifun, rA, rB, valC, valP);
     return false;
+}
+
+/*
+ * calcFStall
+ * calculates F_stall
+ *
+ * @param dObj for getting private data
+ * @param ereg for getting vals
+ * @param icode is icode
+ */
+void FetchStage::calcFStall(DecodeStage * dObj, E * ereg, uint64_t icode)
+{
+    F_stall = ((icode == IMRMOVQ || icode == IPOPQ) && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()));
+}
+
+/*
+ * calcDStall
+ * calculates D_stall
+ *
+ * @param dObj for getting private data
+ * @param ereg for getting vals
+ * @param icode is icode
+ */
+void FetchStage::calcDStall(DecodeStage * dObj, E * ereg, uint64_t icode)
+{
+    D_stall = ((icode == IMRMOVQ || icode == IPOPQ) && (ereg->getdstM()->getOutput() == dObj->getsrcA() || ereg->getdstM()->getOutput() == dObj->getsrcB()));
+}
+
+/*
+ * calculateControlSignals
+ * calculates control signals by calling calcFStall and calcDStall
+ */
+void FetchStage::calculateControlSignals(DecodeStage * dObj, E * ereg, uint64_t icode)
+{
+    calcFStall(dObj, ereg, icode);
+    calcDStall(dObj, ereg, icode);
 }
 
 /*
@@ -230,15 +274,20 @@ void FetchStage::doClockHigh(PipeReg ** pregs)
 {
    F * freg = (F *) pregs[FREG];
    D * dreg = (D *) pregs[DREG];
-
-   freg->getpredPC()->normal();
-   dreg->getstat()->normal();
-   dreg->geticode()->normal();
-   dreg->getifun()->normal();
-   dreg->getrA()->normal();
-   dreg->getrB()->normal();
-   dreg->getvalC()->normal();
-   dreg->getvalP()->normal();
+ 
+   if (!F_stall)
+      freg->getpredPC()->normal();
+   
+   if (!D_stall)
+   {
+      dreg->getstat()->normal();
+      dreg->geticode()->normal();
+      dreg->getifun()->normal();
+      dreg->getrA()->normal();
+      dreg->getrB()->normal();
+      dreg->getvalC()->normal();
+      dreg->getvalP()->normal();
+   }
 }
 
 /* setDInput
