@@ -48,6 +48,9 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     setDstM(dreg, dstM, icode);
     setValA(valA, srcA, mreg, wreg, eObj, mObj, icode, valP);
     setValB(valB, srcB, mreg, wreg, eObj, mObj);
+    
+    bubble = calculateControlSignals(icode, dstM, srcA, srcB); 
+    
     setEInput(ereg, stat, icode, ifun, dstE, dstM, valC, valA, valB, srcA, srcB);
     return false;
 }
@@ -60,21 +63,78 @@ bool DecodeStage::doClockLow(PipeReg ** pregs, Stage ** stages)
  */
 void DecodeStage::doClockHigh(PipeReg ** pregs)
 {
-     //D * dreg = (D *) pregs[FREG];
-     E * ereg = (E *) pregs[EREG];
+    E * ereg = (E *) pregs[EREG];
+    
+    if (bubble)
+    {
+        bubbleE(ereg);
+    }
+    else
+    {
+        normalE(ereg);
+    }
+}
 
+/*
+ * bubbleE
+ * bubble for that
+ *
+ * @param ereg is cool
+ */
+void DecodeStage::bubbleE(E * ereg)
+{
+    ereg->getstat()->bubble(SAOK);
+    ereg->geticode()->bubble(INOP);
+    ereg->getifun()->bubble();
+    ereg->getvalC()->bubble();
+    ereg->getvalA()->bubble();
+    ereg->getvalB()->bubble();
+    ereg->getdstE()->bubble(RNONE);
+    ereg->getdstM()->bubble(RNONE);
+    ereg->getsrcA()->bubble(RNONE);
+    ereg->getsrcB()->bubble(RNONE); 
+}
+
+/*
+ * normalE
+ * somethin cool
+ *
+ * @param ereg is nice
+ */
+void DecodeStage::normalE(E * ereg)
+{
     ereg->getstat()->normal();
     ereg->geticode()->normal();
     ereg->getifun()->normal();
-    ereg->getdstE()->normal();
-    ereg->getdstM()->normal();
     ereg->getvalC()->normal();
     ereg->getvalA()->normal();
     ereg->getvalB()->normal();
+    ereg->getdstE()->normal();
+    ereg->getdstM()->normal();
     ereg->getsrcA()->normal();
     ereg->getsrcB()->normal();
-
 }
+
+/*
+ * calculateControlSignals
+ * does stuff
+ *
+ * @param E_icode is that
+ * @param E_dstM is this
+ * @param d_srcA is what it is
+ * @param d_srcB is src b
+ *
+ * @return boolean if true
+ *
+ */
+bool DecodeStage::calculateControlSignals(uint64_t E_icode, uint64_t E_dstM, 
+                                          uint64_t d_srcA, uint64_t d_srcB)
+{
+    return ((E_icode == IMRMOVQ || E_icode ==IPOPQ) &&
+            (E_dstM == d_srcA || E_dstM == d_srcB));
+            
+}
+
 
 /*
  * setEInput
