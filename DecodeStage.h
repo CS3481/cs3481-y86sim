@@ -14,7 +14,7 @@ class DecodeStage : public Stage
         void setDstM(D * dreg, uint64_t & dstM, uint64_t d_icode);
         void setValA(uint64_t & valA, uint64_t d_srcA, M * mreg, W * wreg, ExecuteStage * eObj, MemoryStage * mObj, uint64_t icode, uint64_t valP);
         void setValB(uint64_t & valB, uint64_t d_srcB, M * mreg, W * wreg, ExecuteStage * eObj, MemoryStage * mObj);
-        bool calculateControlSignals(uint64_t E_icode, uint64_t E_dstM, uint64_t d_srcA, uint64_t d_srcB);
+        bool calculateControlSignals(uint64_t E_icode, uint64_t E_dstM, uint64_t d_srcA, uint64_t d_srcB, uint64_t E_Cnd);
         void normalE(E * ereg);
         void bubbleE(E * ereg);
     
