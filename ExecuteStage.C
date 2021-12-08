@@ -33,9 +33,10 @@ bool ExecuteStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     MemoryStage * mObj = (MemoryStage *) stages[MSTAGE];
     
     uint64_t icode = ereg->geticode()->getOutput(), valA = ereg->getvalA()->getOutput(), 
-            dstM = ereg->getdstM()->getOutput(), Cnd = 0, 
+            dstM = ereg->getdstM()->getOutput(), 
             stat = ereg->getstat()->getOutput(), ifun = ereg->getifun()->getOutput();
-
+    
+    Cnd = 0;
     dstE = ereg->getdstE()->getOutput();
     valE = ereg->getvalC()->getOutput();
 
@@ -428,4 +429,9 @@ uint64_t ExecuteStage::getDstE()
 uint64_t ExecuteStage::getValE()
 {
     return valE;
+}
+
+uint64_t ExecuteStage::getCnd()
+{
+    return Cnd;
 }
