@@ -38,7 +38,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
     DecodeStage * dObj = (DecodeStage *) stages[DSTAGE];
     uint64_t f_pc = 0, icode = 0, ifun = 0, valC = 0, valP = 0;
     uint64_t rA = RNONE, rB = RNONE, stat = SAOK;
-
+    F_stall = false;
+    D_stall = false;
     f_pc = selectPC(freg, mreg, wreg, f_pc);
 
     Memory * mem = Memory::getInstance();
