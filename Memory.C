@@ -4,7 +4,7 @@
 #include "Tools.h"
 
 //Eli Orians & Blake Lucas
-//
+
 //memInstance will be initialized to the single instance
 //of the Memory class
 Memory * Memory::memInstance = NULL;

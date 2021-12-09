@@ -1,12 +1,11 @@
 /**
- * Names:
- * Team:
+ * Names: Eli O & Blake Lucas
+ * Team: Ricky Bobby & Cal Naughton Jr.
 */
 #include <iostream>
 #include <fstream>
 #include <string.h>
 #include <ctype.h>
-
 #include "Loader.h"
 #include "Memory.h"
 
@@ -15,6 +14,8 @@
 #define ADDREND 4     //ending column of 3 digit hex address
 #define DATABEGIN 7   //starting column of data bytes
 #define COMMENT 28    //location of the '|' character 
+int32_t lastAddr = 0; //the last address
+int lastInstrucSize = 0;
 
 /**
  * Loader constructor
@@ -31,6 +32,36 @@
 Loader::Loader(int argc, char * argv[])
 {
    loaded = false;
+
+   inf.open(argv[1], std::ifstream::in);
+    
+   if (inf.is_open())
+   {
+        char x[256];
+        int lineNumber = 1;
+
+        while (inf.good())
+        {
+            inf.getline(x, 256, '\n');
+            if (x[0] == 0)
+                break;
+
+            if (hasErrors(x))
+            {
+                std::cout << "Error on line " << std::dec << lineNumber
+                    << ": " << x << std::endl;
+                return;
+            }
+            lastInstrucSize = 0;
+            if (x[DATABEGIN] != ' ')
+                loadline(x);
+            lineNumber++;
+        }
+        inf.close();
+   }
+   else
+        return;
+   
 
    //Start by writing a method that opens the file (checks whether it ends 
    //with a .yo and whether the file successfully opens; if not, return without 
@@ -51,12 +82,225 @@ Loader::Loader(int argc, char * argv[])
    //  std::cout << "Error on line " << std::dec << lineNumber
    //       << ": " << line << std::endl;
 
-
-   //If control reaches here then no error was found and the program
-   //was loaded into memory.
-   loaded = true;  
-  
+   loaded = true;
 }
+
+/*
+ * hasErrors
+ * checks for errors
+ *
+ * @param x is ptr to line of code
+ * 
+ * @return bool true if errors
+ */
+bool Loader::hasErrors(char *x)
+{
+     if (checkAddress(x))
+        return true;
+    else if (checkData(x))
+        return true;
+    else if (checkSpaces(x))
+        return true;
+    else if (checkLine(x))
+        return true;
+    else
+       return false;
+}
+
+/*
+ * checkAddress
+ * checks the address
+ *
+ * @param x is ptr to line of file
+ *
+ * @return true if errors
+ */
+bool Loader::checkAddress(char *x)
+{
+    //doees address exist?
+    bool exists = false;
+    for (int i = 0; i < 6; i++)
+    {
+        if (x[i] != ' ')
+            exists = true;
+    }
+
+    if (exists == false)
+        return false; 
+    
+     //is it larger than the last?  
+
+     bool lastAddrMore = false;
+     std::string str = "";
+     str += x[2];
+     str += x[3];
+     str += x[4];
+     int32_t curAddr = std::stoul(str, NULL, 16);
+      
+     if (curAddr < lastAddr + lastInstrucSize)
+         lastAddrMore = true;
+
+     lastAddr = curAddr;
+
+     if (lastAddrMore == true)
+         return true;
+
+    //formatted properly?
+
+    if (x[0] == '0' && x[1] == 'x')
+    {
+        for (int i = 2; i < 5; i++)
+        {
+            if ((x[i] >= 48 && x[i] <= 57) || (x[i] >= 65 && x[i] <= 70) || (x[i] >= 97 && x[i] <= 102))
+            {
+                return checkColon(x);
+            }
+            else
+                return true;
+        }
+        return checkColon(x);
+    }
+    else
+        return true;
+}
+
+/*
+ * checkData
+ * checks if data is good
+ * 
+ * @param x is ptr to current line
+ *
+ * @return true if errors
+ */
+bool Loader::checkData(char *x)
+{
+    //does it exist?
+    bool dataExists = false;
+    int dataCounter = 0;
+    for (int i = DATABEGIN; x[i] != '|'; i++)
+    {
+        if (x[i] != ' ')
+        {
+            dataExists = true;
+            dataCounter++;
+        }
+    }
+    
+    //make sure it is even
+    if (dataCounter % 2 != 0)
+        return true;
+
+    bool addExists = false;
+    for (int i = 0; i < 6; i++)
+    {
+        if (x[i] != ' ')
+            addExists = true;
+    }
+
+    if (addExists == false && dataExists == false)
+        return false;
+
+    if (addExists == false && dataExists == true)
+        return true;
+ 
+
+    //formatted properly?
+    
+    int counter = 0;
+    bool dataBad = false;
+    for (int i = DATABEGIN; x[i] != ' ' && i < COMMENT; i++)
+    {
+        //correct characters & in pairs
+        if (!((x[i] >= 48 && x[i] <= 57) || (x[i] >= 65 && x[i] <= 70) || (x[i] >= 97 && x[i] <= 102)))
+            dataBad = true;
+        counter++;
+
+        //columns inline (continue going after space is seen to see if there is more chars)
+        if (x[i+1] == ' ')
+        {
+            i++;
+            while (x[i] != '|' && i < COMMENT)
+            {
+                if (x[i] != ' ')
+                    return true;
+                i++;
+            }
+
+            break;
+        }
+    }
+    
+    if (dataBad == true)
+        return true;
+
+    if (counter % 2 != 0)
+        return true;    
+
+    //Memory size within range?
+    std::string str = "";
+    str += x[2];
+    str += x[3];
+    str += x[4];
+    int32_t addr = std::stoul(str, NULL, 16);
+
+    for (int i = 7; x[i] != ' '; i+=2)
+    {
+        addr++;
+        if (addr > MEMSIZE)
+            return true;
+    }
+    
+    return false;   
+}
+
+/*
+ * checkSpaces
+ * checks spaces in file
+ *
+ * @param x is ptr to curr line in file
+ *
+ * @return true if errors
+ */
+bool Loader::checkSpaces(char *x)
+{
+    if (x[6] == ' ' && x[COMMENT - 1] == ' ')
+        return false;
+    else
+        return true;
+}
+
+/*
+ * checkColon
+ * checks colons in file
+ *
+ * @param x is ptr to curr line in file
+ *
+ * @return true if errors
+ */
+bool Loader::checkColon(char *x)
+{
+    if (x[5] != ':')
+        return true;
+    else
+        return false;
+}
+
+/*
+ * checkLine
+ * checks lines for comments in file
+ *
+ * @param x is ptr to curr line in file
+ *
+ * @return true if errors
+ */
+bool Loader::checkLine(char *x)
+{
+    if (x[COMMENT] == '|')
+        return false;
+    else
+        return true;
+}       
+
 
 /**
  * isLoaded
@@ -69,7 +313,48 @@ bool Loader::isLoaded()
    return loaded;
 }
 
+/*
+ * checkInputFile
+ * checks if file is open
+ *
+ * @return true if is open
+ */
+bool Loader::checkInputFile()
+{
+    if (inf.is_open())
+        return true;
+    else
+        return false;
+}
 
-//You'll need to add more helper methods to this file.  Don't put all of your code in the
-//Loader constructor.  When you add a method here, add the prototype to Loader.h in the private
-//section.
+/*
+ * loadline
+ * loads the line from the file
+ *
+ * @param x is curr line from file
+ */
+void Loader::loadline(char *x)
+{   
+    Memory * mem = Memory::getInstance();
+
+    uint8_t val;
+    int32_t addr;
+    bool err = false;
+    std::string str = "";
+
+    str += x[2];
+    str += x[3];
+    str += x[4];
+    addr = std::stoul(str, NULL, 16);
+
+    for (int i = 7; x[i] != ' '; i+=2) //val to int8_t
+    {
+        std::string str2 = "";
+        str2 = x[i];
+        str2 += x[i + 1];
+        val = std::stoul(str2, NULL, 16);
+        mem -> putByte(val, addr, err);
+        lastInstrucSize++;
+        addr++;
+    }
+}

@@ -1,0 +1,86 @@
+#include <string>
+#include <cstdint>
+#include "RegisterFile.h"
+#include "PipeRegField.h"
+#include "PipeReg.h"
+#include "M.h"
+#include "W.h"
+#include "Stage.h"
+#include "MemoryStage.h"
+#include "Status.h"
+#include "Debug.h"
+
+/*
+ * doClockLow
+ * Low clock cycle in memory stage
+ *
+ * @param pregs is ptr to pipe reg
+ * @param stages is something
+ *
+ * @return bool true if errors
+ */
+bool MemoryStage::doClockLow(PipeReg ** pregs, Stage ** stages)
+{
+    M * mreg = (M *) pregs[MREG];
+    W * wreg = (W *) pregs[WREG];
+
+    uint64_t stat = SAOK, icode = mreg->geticode()->getOutput(), valE = mreg->getvalE()->getOutput(), 
+             valM = 0, dstE = mreg->getdstE()->getOutput(), dstM = mreg->getdstM()->getOutput();
+
+    setWInput(wreg, stat, icode, valE, valM, dstE, dstM);
+    uint64_t address = addr(icode, valE, mreg->getvalA()->getOutput());
+    
+    
+    return false;
+}
+
+/*
+ * doClockHigh
+ * high clock cycle for mem stage
+ *
+ * @param pregs is something pointing at some stuff
+ */
+void MemoryStage::doClockHigh(PipeReg ** pregs)
+{
+    W * wreg = (W *) pregs[WREG];
+
+    wreg->getstat()->normal();
+    wreg->geticode()->normal();
+    wreg->getvalE()->normal();
+    wreg->getvalM()->normal();
+    wreg->getdstE()->normal();
+    wreg->getdstM()->normal();
+}
+
+/*
+ * setWInput
+ * sets inputs for next stage
+ *
+ * @param wreg is ptr to writeback stage
+ * @param stat val for stat
+ * @param icode val for icode
+ * @param valE val for valE
+ * @param valM val for valM
+ * @param dstE val for dstE
+ * @param dstM val for dstM
+ */
+void MemoryStage::setWInput(W * wreg, uint64_t stat, uint64_t icode, uint64_t valE, uint64_t valM,
+                                uint64_t dstE, uint64_t dstM)
+{
+    wreg->getstat()->setInput(stat);  
+    wreg->geticode()->setInput(icode);
+    wreg->getvalE()->setInput(valE);
+    wreg->getvalM()->setInput(valM);
+    wreg->getdstE()->setInput(dstE);
+    wreg->getdstM()->setInput(dstM);      
+}
+
+void MemoryStage::addr(uint64_t icode, uint64_t valE, uint64_t valA)
+{
+    if (icode == IRMMOVQ || icode == IPUSHQ || icode == ICALL || icode == IMRMOVQ)
+         return valE;
+    else if (icode == IPOPQ || icode == IRET)
+        return valA;
+    else
+        return 0;
+}
