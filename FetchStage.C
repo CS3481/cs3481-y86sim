@@ -354,17 +354,21 @@ uint64_t FetchStage::predictPC(uint64_t f_icode, uint64_t f_valC, uint64_t f_val
  */
 void FetchStage::doClockHigh(PipeReg ** pregs)
 {
-   F * freg = (F *) pregs[FREG];
-   //D * dreg = (D *) pregs[DREG];
+    F * freg = (F *) pregs[FREG];
  
-   if (!F_stall)
-      freg->getpredPC()->normal();
+    if (!F_stall)
+    {
+        freg->getpredPC()->normal();
+    }
    
     if (D_bubble)
+    {
         bubbleD(pregs);
-
-   if (!D_stall)
-       normalD(pregs);
+    }
+    else if (!D_stall)
+    {
+        normalD(pregs);
+    }
 }
 
 /*
