@@ -84,6 +84,8 @@ bool FetchStage::doClockLow(PipeReg ** pregs, Stage ** stages)
         {
             valC = 0;
         }
+        rA = RNONE;
+        rB = RNONE;
     }
     
     uint64_t prdct = predictPC(icode, valC, valP);   
